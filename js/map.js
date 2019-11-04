@@ -1,102 +1,74 @@
-class CountryData {
-    /**
-     *
-     * @param type refers to the geoJSON type- countries are considered features
-     * @param properties contains the value mappings for the data
-     * @param geometry contains array of coordinates to draw the country paths
-     * @param region the country region
-     */
-    constructor(type, id, properties, geometry, region) {
-
-        this.type = type;
-        this.id = id;
-        this.properties = properties;
-        this.geometry = geometry;
-        this.region = region;
-
-
-    }
-}
-
-
-
-
 class Map {
-    /**
-     * Creates a Table Object
-     */
+
     constructor(data) {
         this.data = data;
         this.projection = null;
-
-
+        this.width = 960;
+        this.height = 500;
 
         this.initMap();
-
-        console.log("map constructor called");
     }
 
-    initMap(){
+    initMap() {
 
-
-        console.log("init map called")
-//
+        //bind 'this' context to variable so we can use Map class variables inside promise
+        let self = this;
 
         d3.json("data/us-states.json")
-            .then(function(json){
+            .then(function (json) {
                 {
-
-                    console.log("json loaded");
-
-
-                    //Width and height of map
-                    var width = 960;
-                    var height = 500;
-
-// D3 Projection
                     let projection = d3.geoAlbersUsa()
-                        .translate([width / 2, height / 2])    // translate to center of screen
-                        .scale([1000]);          // scale things down so see entire US
-
-// Define path generator
-                    let path = d3.geoPath()               // path generator that will convert GeoJSON to SVG paths
-                        .projection(projection);  // tell path generator to use albersUsa projection
+                        .translate([self.width / 2, self.height / 2])
+                        .scale([1000]);
 
 
-                    console.log("path", path);
+                    let path = d3.geoPath()
+                        .projection(projection);
 
-                    console.log("projection", projection);
-
-
-//Create SVG element and append map to the SVG
                     let svg = d3.select("#mapSvg")
-                        .attr("width", width)
-                        .attr("height", height);
+                        .attr("width", self.width)
+                        .attr("height", self.height);
+
+                    let maxObs = d3.max(self.data, function(d) { return +d.count;} );
+
+                    console.log("maxObs", maxObs);
 
 
-// Load GeoJSON data and merge with states data
+                    let obsScale = function(count){
 
+                        if(typeof count !== "number")
+                        {
+                            return 1/maxObs*2;
+                        }
+                        else{
+                            return count/maxObs*2;
+                        }
+                    }
 
-// Bind the data to the SVG and create one path per GeoJSON feature
                     svg.selectAll("path")
                         .data(json.features)
                         .enter()
                         .append("path")
                         .attr("d", path)
-                        .style("stroke", "#fff")
-                        .style("stroke-width", "1")
+                        .style("fill", "white")
+                        .style("stroke", "black")
+                        .style("stroke-width", "1");
 
+                    svg.selectAll("circle")
+                        .data(self.data)
+                        .join("circle")
+
+                        .attr("cx", function (d) {
+                            return projection([d.long, d.lat])[0];
+                        })
+                        .attr("cy", function (d) {
+                            return projection([d.long, d.lat])[1];
+                        })
+                        .attr("r", 5)
+                        .style("fill", "blue")
+                        .style("opacity", d => obsScale(d.count))
+                        .on("mouseover", d => console.log("Observation count:", d.count));
                 }
-
             });
-
-
-
-
-
-
-
     }
-
-
 }
