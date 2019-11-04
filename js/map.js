@@ -14,16 +14,23 @@ class Map {
         //bind 'this' context to variable so we can use Map class variables inside promise
         let self = this;
 
-        d3.json("data/us-states.json")
+        d3.json("data/custom.geo.json")
             .then(function (json) {
                 {
                     let projection = d3.geoAlbersUsa()
                         .translate([self.width / 2, self.height / 2])
                         .scale([1000]);
 
+                    let mercProj = d3.geoAlbers()
+                                .center([50, 40])
+                                .rotate([105, 0])
+                                .parallels([35, 55])
+                                .scale(250)
+                                .translate([self.width / 2, self.height / 2]);
+
 
                     let path = d3.geoPath()
-                        .projection(projection);
+                        .projection(mercProj);
 
                     let svg = d3.select("#mapSvg")
                         .attr("width", self.width)
@@ -45,6 +52,9 @@ class Map {
                         }
                     }
 
+                    //Could something like this work for the opacity scale?
+                    //let tempScale = d3.scaleLinear().domain([minObs, maxObs]).range([.2, 1]);
+
                     svg.selectAll("path")
                         .data(json.features)
                         .enter()
@@ -59,10 +69,10 @@ class Map {
                         .join("circle")
 
                         .attr("cx", function (d) {
-                            return projection([d.long, d.lat])[0];
+                            return mercProj([d.long, d.lat])[0];
                         })
                         .attr("cy", function (d) {
-                            return projection([d.long, d.lat])[1];
+                            return mercProj([d.long, d.lat])[1];
                         })
                         .attr("r", 5)
                         .style("fill", "blue")
