@@ -4,15 +4,14 @@ class Map {
         this.data = data;
         this.projection = null;
         this.activeYear = 2016;
-        this.activeSeason = d3.scaleTime().domain([new Date(this.activeYear, 1, 1), new Date(this.activeYear, 12, 31)]).range([0,100])
+        this.activeSeason = [new Date(this.activeYear, 1, 1), new Date(this.activeYear, 12, 31)]
         this.width = 960;
         this.height = 500;
 
-        console.log(this.activeSeason(new Date(this.activeYear, 2, 15)))
+        console.log(this.activeSeason[0])
 
         this.initMap();
         this.initializeSliders()
-        this.drawYearBar()
     }
 
     initMap() {
@@ -90,38 +89,81 @@ class Map {
 
     initializeSliders()
     {
-        d3.select("body").append("svg")
+        d3.select("body").append("div").attr("id", "seasonDiv")
+                         .append("svg")
                          .attr("width", this.width)
-                         .attr("height", 300).attr("id", "sliderSVG")
+                         .attr("height", 100).attr("id", "seasonSVG")
                          .attr("translate", "transform(0, " + this.height + ")");
 
         d3.select('body')
           .append('div').attr('id', 'activeYear-bar');
+
+
+        this.drawSeason();
+        this.drawYearBar();
+    }
+
+    drawSeason()
+    {
+        let that = this;
+        let seasonScale = d3.scaleTime().domain([new Date(this.activeYear, 1, 1), new Date(this.activeYear, 12, 31)]).range([0,100])
+        let seasonAxis = d3.axisBottom().scale(seasonScale).ticks(12)//.tickFormat(d => {if(d == 0){return 0;} else if(d == 1){ return 1;} else {return .5}})
+
+        let seasonGroup = d3.select("#seasonSVG").append("g")
+        seasonGroup.append("rect").attr("width", that.width).attr("height", 30)
+        seasonGroup.call(seasonAxis)
+
+        let brush = d3.brushX().extent([[0, 0], [that.width, 30]])
+                               .on("start", () => {
+                                   console.log("Brushing started")
+                                   
+                               })
+                               .on("brush", () => {
+                                   console.log("Brushing")
+                                   console.log("this", d3.selectAll(".brushGroup"))
+                                   //console.log(d3.event.sourceEvent.target.parentElement["__data__"].y)
+                                   
+                                   const selection = d3.event.selection;
+                                   const selectedIndices = [];
+                                   if (selection) 
+                                   {
+                                        //Check how much was brushed and color accorindly.
+
+                                   }
+
+                                   //Update the Table
+                                //    that.table.updateTable(that.speechData.filter(d => {
+                                //        if (selectedIndices.includes(d.index)) {
+                                //            return true;
+                                //        }
+                                //        else {
+                                //            return false;
+                                //        }
+                                // }))
+                               })
+                               .on("end", () => {
+                                   console.log("Brushing Complete", d3.event.selection)
+                                   if(!d3.event.selection)
+                                   {
+                                        that.activeSeason = [new Date(this.activeYear, 1, 1), new Date(this.activeYear, 12, 31)]
+                                   }
+                               })
+
+        seasonGroup.call(brush)
     }
 
     drawYearBar() {
-
-        // ******* TODO: PART 2 *******
-        //The drop-down boxes are set up for you, but you have to set the slider to updatePlot() on activeYear change
-
-        // Create the x scale for the activeYear;
-        // hint: the domain should be max and min of the years (1800 - 2020); it's OK to set it as numbers
-        // the plot needs to update on move of the slider
-
-        /* ******* TODO: PART 3 *******
-        You will need to call the updateYear() function passed from script.js in your activeYear slider
-        */
         let that = this;
 
         //Slider to change the activeYear of the data
-        let yearScale = d3.scaleLinear().domain([1800, 2020]).range([30, 730]);
+        let yearScale = d3.scaleLinear().domain([2004, 2016]).range([30, 730]);
 
         let yearSlider = d3.select('#activeYear-bar')
             .append('div').classed('slider-wrap', true)
             .append('input').classed('slider', true)
             .attr('type', 'range')
-            .attr('min', 1800)
-            .attr('max', 2020)
+            .attr('min', 2004)
+            .attr('max', 2016)
             .attr('value', this.activeYear);
 
         let sliderLabel = d3.select('.slider-wrap')
