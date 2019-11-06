@@ -3,6 +3,30 @@ view
     background-color: rgb(0,0,0);
 }
 
+#seasonDiv
+{
+    margin-left: 70px;
+}
+
+.year-round
+{
+    fill: purple;
+}
+.breeding
+{
+    fill: red;
+}
+.pre-migration
+{
+    fill: yellow;
+}
+.post-migration
+{
+    fill:orange;
+}
+
+
+
 .slider {
     -webkit-appearance: none;
     width: 725px;
