@@ -129,25 +129,32 @@ class Map {
         let that = this;
         //let monthDict = {0: "January", 1: "Februrary", 2: "March", 3: "April", 4: "May", 5: "June", 6: "July", 7: "August", 8: "September", 9: "October", 10: "November", 11: "December"}
         let monthDict = {0: "Jan", 1: "Feb", 2: "Mar", 3: "Apr", 4: "May", 5: "Jun", 6: "Jul", 7: "Aug", 8: "Sept", 9: "Oct", 10: "Nov", 11: "Dec"}
+        let tempData = [
+            new seasonalData("year-round", new Date(this.activeYear, 0, 1), new Date(this.activeYear, 11, 31)),
+            new seasonalData("breeding", new Date(this.activeYear, 6, 1), new Date(this.activeYear, 8, 31)),
+            new seasonalData("pre-migration", new Date(this.activeYear, 2, 1), new Date(this.activeYear, 5, 31)),
+            new seasonalData("post-migration", new Date(this.activeYear, 9, 1), new Date(this.activeYear, 10, 31)),
+        ]
+
 
         //Add season selector rectangles
         let seasonRectGroup = d3.select("#seasonSVG").append("g").attr("class", "selectRect");
-        let rectData = [{"time": "year-round", "pos": 0}, {"time": "breeding", "pos": 100}, {"time": "pre-migration", "pos": 200}, {"time": "post-migration", "pos": 300}];
+        //let rectData = [{"time": "year-round", "pos": 0}, {"time": "breeding", "pos": 100}, {"time": "pre-migration", "pos": 200}, {"time": "post-migration", "pos": 300}];
         seasonRectGroup.selectAll("rect")
-                       .data(rectData)
+                       .data(tempData)
                        .join("rect")
                        .attr("width", 40)
                        .attr("height", 20)
-                       .attr("x", d=> d.pos)
-                       .attr("class", d => d.time)
-                       .on("click", function(event){console.log(event);})
+                       .attr("x", (d,i) => i * 100)
+                       .attr("class", d => d.type)
+                       .on("click", d => d3.select(".brushGroup").call(brush.move, [seasonScale(d.start), seasonScale(d.end)]));
         seasonRectGroup.selectAll("text")
-                       .data(rectData)
+                       .data(tempData)
                        .join("text")
-                       .attr("x", d=> d.pos)
+                       .attr("x", (d,i) => i * 100)
                        .attr("y", 45)
                        .style("font-weight", "bold")
-                       .text(d => d.time)
+                       .text(d => d.type)
 
         //Build the Axis
         console.log([new Date(this.activeYear, 0, 1), new Date(this.activeYear, 11, 31)])
@@ -161,12 +168,7 @@ class Map {
 
 
         //Build the brushable box
-        let tempData = [
-            new seasonalData("year-round", new Date(this.activeYear, 0, 1), new Date(this.activeYear, 11, 31)),
-            new seasonalData("breeding", new Date(this.activeYear, 6, 1), new Date(this.activeYear, 8, 31)),
-            new seasonalData("pre-migration", new Date(this.activeYear, 2, 1), new Date(this.activeYear, 5, 31)),
-            new seasonalData("post-migration", new Date(this.activeYear, 9, 1), new Date(this.activeYear, 10, 31)),
-        ]
+        
         d3.select("#seasonSVG").append("g").attr("class", "brushRectGroup").attr("transform", "translate(0, 90)")
                                .selectAll("rect")
                                .data(tempData)
