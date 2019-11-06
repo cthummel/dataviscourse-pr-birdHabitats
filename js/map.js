@@ -19,7 +19,7 @@ class Map {
         this.data = data;
         this.projection = null;
         this.activeYear = 2016;
-        this.activeSeason = [new Date(this.activeYear, 1, 1), new Date(this.activeYear, 12, 31)]
+        this.activeSeason = [new Date(this.activeYear, 0, 1), new Date(this.activeYear, 11, 31)]
         this.width = 750;
         this.height = 650;
 
@@ -133,7 +133,7 @@ class Map {
             new seasonalData("year-round", new Date(this.activeYear, 0, 1), new Date(this.activeYear, 11, 31)),
             new seasonalData("breeding", new Date(this.activeYear, 6, 1), new Date(this.activeYear, 8, 31)),
             new seasonalData("pre-migration", new Date(this.activeYear, 2, 1), new Date(this.activeYear, 5, 31)),
-            new seasonalData("post-migration", new Date(this.activeYear, 9, 1), new Date(this.activeYear, 10, 31)),
+            new seasonalData("post-migration", new Date(this.activeYear, 9, 1), new Date(this.activeYear, 10, 31))
         ]
 
 
@@ -168,7 +168,6 @@ class Map {
 
 
         //Build the brushable box
-        
         d3.select("#seasonSVG").append("g").attr("class", "brushRectGroup").attr("transform", "translate(0, 90)")
                                .selectAll("rect")
                                .data(tempData)
@@ -186,18 +185,14 @@ class Map {
                                })
                                .on("brush", () => {
                                    console.log("Brushing")
-                                   
-                                   
                                    const selection = d3.event.selection;
                                    const [left, right] = selection;
                                    const selectedIndices = [];
                                    if (selection) 
                                    {
-                                        //Check how much was brushed and color accorindly.
+                                        //Check how much was brushed.
 
                                    }
-
-                                   
                                })
                                .on("end", () => {
                                    console.log("Brushing Complete", d3.event.selection)
