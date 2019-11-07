@@ -4,7 +4,8 @@
 
 
     </svg>
-    <div id="seasonSVG">
+        <br>
+    <div id="seasonDiv">
     </div>
 
         <div id="activeYear-bar">
@@ -105,6 +106,22 @@
                                 .on("mouseover", d => console.log("Observation count:", d.count));
                         }
                     });
+            },
+
+            initializeSliders()
+            {
+                d3.select("#seasonDiv")
+                    .append("svg")
+                    .attr("width", this.width)
+                    .attr("height", 150).attr("id", "seasonSVG")
+                    .attr("translate", "transform(0, " + this.height + ")");
+
+                d3.select('body')
+                    .append('div').attr('id', 'activeYear-bar');
+
+
+                this.drawSeason();
+                this.drawYearBar();
             },
 
             drawSeason: function()
@@ -210,7 +227,7 @@
                 let that = this;
 
                 //Slider to change the activeYear of the data
-                let yearScale = d3.scaleLinear().domain([2004, 2016]).range([30, 730]);
+                let yearScale = d3.scaleLinear().domain([2004, 2016]).range([30, 600]);
 
                 let yearSlider = d3.select('#activeYear-bar')
                     .append('div').classed('slider-wrap', true)
@@ -218,11 +235,13 @@
                     .attr('type', 'range')
                     .attr('min', 2004)
                     .attr('max', 2016)
-                    .attr('value', this.activeYear);
+                    .attr('value', this.activeYear)
 
                 let sliderLabel = d3.select('.slider-wrap')
                     .append('div').classed('slider-label', true)
-                    .append('svg');
+                    .append('svg')
+                    .attr("width", this.width - 100)
+                    .attr("height", this.height);
 
                 let sliderText = sliderLabel.append('text').text(this.activeYear);
 
@@ -253,8 +272,7 @@
 
             demoData: function () {
                 this.buildDemoMap();
-                this.drawSeason();
-                this.drawYearBar();
+                this.initializeSliders();
             }
 
         }
@@ -263,6 +281,25 @@
 
 <style>
 
+    .year-round{
+        fill: lightgreen;
+    }
+
+    .breeding{
+        fill: aqua;
+    }
+
+    .pre-migration{
+        fill: coral;
+    }
+
+    .post-migration{
+        fill: hotpink;
+    }
+
+    .slider{
+        width: 700px;
+    }
 
 </style>
 
