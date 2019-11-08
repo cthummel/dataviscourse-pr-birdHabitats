@@ -214,9 +214,34 @@ class Map {
     /**
      * Called when the year or bird changes in case seasonal data is different.
      */
-    updateSeason()
+    updateSeason(seasonalData)
     {
+        //Add season selector rectangles
+        let seasonRectGroup = d3.select(".selectRect")
+        seasonRectGroup.selectAll("rect")
+                       .data(seasonalData)
+                       .join("rect")
+                       .attr("width", 40)
+                       .attr("height", 20)
+                       .attr("x", (d,i) => i * 100)
+                       .attr("class", d => d.type)
+                       .on("click", d => d3.select(".brushGroup").call(brush.move, [seasonScale(d.start), seasonScale(d.end)]));
+        seasonRectGroup.selectAll("text")
+                       .data(seasonalData)
+                       .join("text")
+                       .attr("x", (d,i) => i * 100)
+                       .attr("y", 45)
+                       .style("font-weight", "bold")
+                       .text(d => d.type)
 
+        //Build the brushable box
+        d3.select(".brushRectGroup").selectAll("rect")
+                               .data(seasonalData)
+                               .join("rect")
+                               .attr("width", d => seasonScale(d.end) - seasonScale(d.start))
+                               .attr("height", 30)
+                               .attr("x", d => seasonScale(d.start))
+                               .attr("class", d => d.type)
     }
 
 
