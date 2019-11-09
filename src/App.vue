@@ -56,7 +56,8 @@ export default {
           commonName: d['COMMON NAME'],
           lat: parseFloat(d.LATITUDE),
           long: parseFloat(d.LONGITUDE),
-          count: d['OBSERVATION COUNT']
+          count: d['OBSERVATION COUNT'],
+          date: d['OBSERVATION DATE']
         };
 
       }).then(function(data) {

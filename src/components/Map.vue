@@ -209,9 +209,12 @@
                         {
                             that.activeSeason = [seasonScale.invert(left), seasonScale.invert(right)]
                             //Here we subset the data set using the new season.
-                            that.activeData = that.demoData.filter(d => {return (d.Date <= that.activeSeason[1] && d.Date >= that.activeSeason[0])})
+                            that.activeData = that.demoData.filter(d => { 
+                                if (new Date(d.date) <= that.activeSeason[1] && new Date(d.date) >= that.activeSeason[0]){return true} 
+                                else {return false}
+                            })
 
-
+                            console.log("new data: ", that.activeData)
                             console.log("new season: ", that.activeSeason)
                         }
                     })
