@@ -35,6 +35,7 @@
                 height: 650,
                 projection: null,
                 activeYear: "2016",
+                activeSeason: [new Date(this.activeYear, 0, 1), new Date(this.activeYear, 11, 31)],
 
             }
         },
@@ -212,11 +213,37 @@
             },
 
             /**
-             * Called when the year or bird changes in case seasonal data is different.
+             * Called when bird changes in case seasonal data is different.
              */
-            updateSeason: function()
+            updateSeasonalDisplay: function()
             {
+                //Add season selector rectangles
+                let seasonRectGroup = d3.select(".selectRect")
+                seasonRectGroup.selectAll("rect")
+                               .data(seasonalData)
+                               .join("rect")
+                               .attr("width", 40)
+                               .attr("height", 20)
+                               .attr("x", (d,i) => i * 100)
+                               .attr("class", d => d.type)
+                               .on("click", d => d3.select(".brushGroup").call(brush.move, [seasonScale(d.start), seasonScale(d.end)]));
 
+                seasonRectGroup.selectAll("text")
+                               .data(seasonalData)
+                               .join("text")
+                               .attr("x", (d,i) => i * 100)
+                               .attr("y", 45)
+                               .style("font-weight", "bold")
+                               .text(d => d.type)
+
+                //Build the brushable box
+                d3.select(".brushRectGroup").selectAll("rect")
+                               .data(seasonalData)
+                               .join("rect")
+                               .attr("width", d => seasonScale(d.end) - seasonScale(d.start))
+                               .attr("height", 30)
+                               .attr("x", d => seasonScale(d.start))
+                               .attr("class", d => d.type)
             },
 
 
@@ -227,7 +254,7 @@
                 let that = this;
 
                 //Slider to change the activeYear of the data
-                let yearScale = d3.scaleLinear().domain([2004, 2016]).range([30, 600]);
+                let yearScale = d3.scaleLinear().domain([2004, 2016]).range([30, 730]);
 
                 let yearSlider = d3.select('#activeYear-bar')
                     .append('div').classed('slider-wrap', true)
@@ -296,10 +323,60 @@
     .post-migration{
         fill: hotpink;
     }
-
-    .slider{
-        width: 700px;
+    #seasonDiv {
+        margin-left: 50px;
     }
+
+    .slider {
+    -webkit-appearance: none;
+    width: 725px;
+    height: 15px;
+    border-radius: 5px;
+    background: #d3d3d3;
+    outline: none;
+    opacity: 0.7;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+    margin-left: 20px
+    }
+
+    .slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: #4CAF50;
+    cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: #D4E157;
+    cursor: pointer;
+}
+
+.slider:hover {
+    opacity: 1;
+}
+
+.slider-label svg {
+    width: 750px;
+    height: 35px;
+}
+
+.slider-label svg text {
+    text-anchor: middle;
+}
+
+.slider-wrap {
+    display: inline-block;
+    float: left;
+    width: 750px;
+    margin-left: 50px;
+}
 
 </style>
 
