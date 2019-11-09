@@ -1,11 +1,27 @@
 <template>
   <div id="app">
+      <div>
     <div id="header-wrap">
       <header>
         <h1>Bird Habitat and Population Trends</h1>
         <div>Will Richards, Corin Thummel</div>
-        <Map :demoData="demoData" :selectedSpecies="selectedSpecies" :selectedYear="selectedYear"></Map>
+
+        <br>
+        <h4>Select a species to visualize</h4>
+        <v-select                class="vs__dropdown-toggle"
+                                  v-model="selectedSpecies" :options="allSpecies"> </v-select>
       </header>
+
+
+
+      <br>
+      <Map :demoData="demoData" :selectedSpecies="selectedSpecies"></Map>
+
+
+    </div>
+
+
+
     </div>
   </div>
 </template>
@@ -25,8 +41,8 @@ export default {
   },
 
   data() { return {
-    allSpecies: [],
-    selectedSpecies: [],
+    allSpecies: ["Yellow-bellied Sapsucker"],
+    selectedSpecies: null,
 
     allYears: ["2007", "2008", "2009", "2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017", "2018"],
     selectedYear: null,
@@ -37,8 +53,6 @@ export default {
   methods : {
 
     initWithDemoData(){
-      this.selectedSpecies = [];
-      this.selectedSpecies.push("Yellow-bellied Sapsucker")
 
       this.selectedYear = "2018";
     },
@@ -50,13 +64,12 @@ export default {
       //thank gosh d3 properly handles the whitespace
       d3.dsv("\t", "smallTest.txt", function(d) {
 
-        // console.log("d", d);
-
         return {
           commonName: d['COMMON NAME'],
           lat: parseFloat(d.LATITUDE),
           long: parseFloat(d.LONGITUDE),
-          count: d['OBSERVATION COUNT']
+          count: d['OBSERVATION COUNT'],
+            date: d['LAST EDITED DATE'],
         };
 
       }).then(function(data) {
@@ -90,6 +103,14 @@ export default {
     width: 100%;
     height: 100%;
   }
+
+
+  #header-wrap{
+      margin: 10px;
+  }
+
+
+
 
 </style>
 
