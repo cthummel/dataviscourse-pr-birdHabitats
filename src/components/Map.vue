@@ -1,3 +1,4 @@
+/* eslint-disable */
 <template>
     <div id="Map">
     <svg id="mapSvg">
@@ -15,6 +16,8 @@
 </template>
 
 <script>
+
+
 
 
     import {seasonalData} from './../../js/seasonalData'
@@ -36,14 +39,8 @@
                 width: 700,
                 height: 650,
                 projection: null,
-<<<<<<< HEAD
-                activeYear: null,
-                selectedDate: null,
-=======
                 activeYear: "2016",
-                activeSeason: [new Date(this.activeYear, 0, 1), new Date(this.activeYear, 11, 31)],
-                activeData: null,
->>>>>>> 60e1fecc4f11c1570ef30a923b316c1af7442637
+                selectedDate: null,
 
             }
         },
@@ -299,19 +296,21 @@
                         const [left, right] = d3.event.selection;
                         if(!d3.event.selection)
                         {
-                            that.activeSeason = [new Date(this.activeYear, 0, 1), new Date(this.activeYear, 11, 31)]
+                            that.activeSeason = [new Date(that.activeYear, 0, 1), new Date(that.activeYear, 11, 31)]
                         }
                         else
                         {
-
                             that.activeSeason = [seasonScale.invert(left), seasonScale.invert(right)]
+
+                            console.log("active season", that.activeSeason);
                             //Here we subset the data set using the new season.
-                            that.activeData = that.demoData.filter(d => {
+                            that.selectedData = that.demoData.filter(d => {
                                 if (new Date(d.date) <= that.activeSeason[1] && new Date(d.date) >= that.activeSeason[0]){return true}
                                 else {return false}
                             })
 
-                            console.log("new data: ", that.activeData)
+                            console.log(that.activeYear);
+                            console.log("new data: ", that.selectedData)
                             console.log("new season: ", that.activeSeason)
                         }
 
@@ -367,7 +366,6 @@
                     let date = new Date(d.date)
 
                     let y = date.getFullYear();
-                    console.log("year, y", year, y);
 
                     if(parseInt(year) === parseInt(y) ){
                         return true;
@@ -446,7 +444,11 @@
         },
         watch: {
             selectedSpecies: function () {
-                this.rebuildDemoMap();
+
+                let data = this.filterDataByYear(this.activeYear);
+
+                this.rebuildFromData(data);
+                // this.rebuildDemoMap();
             },
 
             selectedDate: function(){
