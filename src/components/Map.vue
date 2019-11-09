@@ -25,6 +25,7 @@
 
         props: {
             selectedSpecies: null,
+            selectedSeason: null,
             demoData: null,
         },
 
@@ -35,13 +36,18 @@
                 width: 700,
                 height: 650,
                 projection: null,
+<<<<<<< HEAD
                 activeYear: null,
                 selectedDate: null,
+=======
+                activeYear: "2016",
+                activeSeason: [new Date(this.activeYear, 0, 1), new Date(this.activeYear, 11, 31)],
+                activeData: null,
+>>>>>>> 60e1fecc4f11c1570ef30a923b316c1af7442637
 
             }
         },
         methods: {
-
             initMap(){
 
                 let self = this;
@@ -297,18 +303,15 @@
                         }
                         else
                         {
-                            that.activeSeason = [seasonScale.invert(left), seasonScale.invert(right)];
 
-                            console.log("that.activeSeason", that.activeSeason);
+                            that.activeSeason = [seasonScale.invert(left), seasonScale.invert(right)]
                             //Here we subset the data set using the new season.
-                            that.selectedData = that.demoData.filter(d => {
-                                let dt = new Date(d.date);
-                                console.log("date", dt, d.date);
-                                if (new Date(d.date) <= that.activeSeason[1] && new Date(d.date) >= that.activeSeason[0]){console.log("filtering true"); return true}
-                                else {console.log("filtering false");return false}
-                            });
-                            console.log("that.demoData", that.demoData)
-                            console.log("new data: ", that.selectedData)
+                            that.activeData = that.demoData.filter(d => {
+                                if (new Date(d.date) <= that.activeSeason[1] && new Date(d.date) >= that.activeSeason[0]){return true}
+                                else {return false}
+                            })
+
+                            console.log("new data: ", that.activeData)
                             console.log("new season: ", that.activeSeason)
                         }
 
@@ -324,7 +327,7 @@
             },
 
             /**
-             * Called when the year or bird changes in case seasonal data is different.
+             * Called when bird changes in case seasonal data is different.
              */
             updateSeasonalDisplay: function(seasonalData)
             {
@@ -378,6 +381,14 @@
                 return filteredData;
 
 
+                //Build the brushable box
+                d3.select(".brushRectGroup").selectAll("rect")
+                               .data(seasonalData)
+                               .join("rect")
+                               .attr("width", d => seasonScale(d.end) - seasonScale(d.start))
+                               .attr("height", 30)
+                               .attr("x", d => seasonScale(d.start))
+                               .attr("class", d => d.type)
             },
 
 
@@ -454,7 +465,6 @@
                 this.selectedData = this.demoData;
             },
 
-
         }
     }
 </script>
@@ -476,10 +486,60 @@
     .post-migration{
         fill: hotpink;
     }
-
-    .slider{
-        width: 700px;
+    #seasonDiv {
+        margin-left: 50px;
     }
+
+    .slider {
+    -webkit-appearance: none;
+    width: 725px;
+    height: 15px;
+    border-radius: 5px;
+    background: #d3d3d3;
+    outline: none;
+    opacity: 0.7;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+    margin-left: 20px
+    }
+
+    .slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: #4CAF50;
+    cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: #D4E157;
+    cursor: pointer;
+}
+
+.slider:hover {
+    opacity: 1;
+}
+
+.slider-label svg {
+    width: 750px;
+    height: 35px;
+}
+
+.slider-label svg text {
+    text-anchor: middle;
+}
+
+.slider-wrap {
+    display: inline-block;
+    float: left;
+    width: 750px;
+    margin-left: 50px;
+}
 
 </style>
 

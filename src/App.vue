@@ -70,6 +70,7 @@ export default {
           long: parseFloat(d.LONGITUDE),
           count: d['OBSERVATION COUNT'],
             date: d['LAST EDITED DATE'],
+
         };
 
       }).then(function(data) {
