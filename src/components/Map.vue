@@ -25,6 +25,7 @@
         props: {
             selectedYear: null,
             selectedSpecies: null,
+            selectedSeason: null,
             demoData: null,
         },
 
@@ -36,6 +37,7 @@
                 projection: null,
                 activeYear: "2016",
                 activeSeason: [new Date(this.activeYear, 0, 1), new Date(this.activeYear, 11, 31)],
+                activeData: null,
 
             }
         },
@@ -48,6 +50,8 @@
                 d3.json("mediumNA.geo.json")
                     .then(function (json) {
                         {
+                            self.activeData = self.demoData
+
                             let mercProj = d3.geoAlbers()//d3.geoMollweide()
                                 .center([-10, 45])
                                 .rotate([105, 0])
@@ -188,7 +192,6 @@
                         console.log("Brushing")
                         const selection = d3.event.selection;
                         const [left, right] = selection;
-                        const selectedIndices = [];
                         if (selection)
                         {
                             //Check how much was brushed.
@@ -205,6 +208,10 @@
                         else
                         {
                             that.activeSeason = [seasonScale.invert(left), seasonScale.invert(right)]
+                            //Here we subset the data set using the new season.
+                            that.activeData = that.demoData.filter(d => {return (d.Date <= that.activeSeason[1] && d.Date >= that.activeSeason[0])})
+
+
                             console.log("new season: ", that.activeSeason)
                         }
                     })
@@ -215,7 +222,7 @@
             /**
              * Called when bird changes in case seasonal data is different.
              */
-            updateSeasonalDisplay: function()
+            updateSeasonalDisplay: function(seasonalData)
             {
                 //Add season selector rectangles
                 let seasonRectGroup = d3.select(".selectRect")
@@ -294,6 +301,10 @@
             },
 
             selectedYear: function () {
+
+            },
+
+            selectedSeason: function (){
 
             },
 
