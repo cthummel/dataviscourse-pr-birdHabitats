@@ -45,10 +45,10 @@
                 //bind 'this' context to variable so we can use Map class variables inside promise
                 let self = this;
 
-                d3.json("north-america.json")
+                d3.json("mediumNA.geo.json")
                     .then(function (json) {
                         {
-                            let mercProj = d3.geoAlbers()
+                            let mercProj = d3.geoAlbers()//d3.geoMollweide()
                                 .center([-10, 45])
                                 .rotate([105, 0])
                                 .parallels([35, 55])
