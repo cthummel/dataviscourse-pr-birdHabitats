@@ -1,3 +1,4 @@
+/* eslint-disable */
 <template>
     <div id="Map">
     <svg id="mapSvg">
@@ -16,6 +17,9 @@
 
 <script>
 
+
+
+
     import {seasonalData} from './../../js/seasonalData'
 
 
@@ -23,7 +27,6 @@
         name: 'Map',
 
         props: {
-            selectedYear: null,
             selectedSpecies: null,
             selectedSeason: null,
             demoData: null,
@@ -32,59 +35,38 @@
         data() {
             return {
 
-                width: 750,
+                selectedData: null,
+                width: 700,
                 height: 650,
                 projection: null,
                 activeYear: "2016",
-                activeSeason: [new Date(this.activeYear, 0, 1), new Date(this.activeYear, 11, 31)],
-                activeData: null,
+                selectedDate: null,
 
             }
         },
         methods: {
+            initMap(){
 
-            buildDemoMap() {
-                //bind 'this' context to variable so we can use Map class variables inside promise
                 let self = this;
 
-                d3.json("mediumNA.geo.json")
+                let svg = d3.select("#mapSvg")
+                    .attr("width", self.width)
+                    .attr("height", self.height);
+
+                let mercProj = d3.geoAlbers()
+                    .center([-10, 45])
+                    .rotate([105, 0])
+                    .parallels([35, 55])
+                    .scale(400)
+                    .translate([self.width / 2, self.height / 2]);
+
+
+                let path = d3.geoPath()
+                    .projection(mercProj);
+
+                d3.json("north-america.json")
                     .then(function (json) {
                         {
-                            self.activeData = self.demoData
-
-                            let mercProj = d3.geoAlbers()//d3.geoMollweide()
-                                .center([-10, 45])
-                                .rotate([105, 0])
-                                .parallels([35, 55])
-                                .scale(500)
-                                .translate([self.width / 2, self.height / 2]);
-
-
-                            let path = d3.geoPath()
-                                .projection(mercProj);
-
-                            let svg = d3.select("#mapSvg")
-                                .attr("width", self.width)
-                                .attr("height", self.height);
-
-                            let maxObs = d3.max(self.demoData, function(d) { return +d.count;} );
-
-                            console.log("maxObs", maxObs);
-
-
-                            let obsScale = function(count){
-
-                                if(typeof count !== "number")
-                                {
-                                    return 1/maxObs*2;
-                                }
-                                else{
-                                    return count/maxObs*2;
-                                }
-                            }
-
-                            //Could something like this work for the opacity scale?
-                            //let tempScale = d3.scaleLinear().domain([minObs, maxObs]).range([.2, 1]);
 
                             svg.selectAll("path")
                                 .data(json.features)
@@ -95,22 +77,142 @@
                                 .style("stroke", "black")
                                 .style("stroke-width", "1");
 
-                            svg.selectAll("circle")
-                                .data(self.demoData)
-                                .join("circle")
-                                .attr("font-size", d => console.log("d inside circles", d))
-                                .attr("cx", function (d) {
-                                    return mercProj([d.long, d.lat])[0];
-                                })
-                                .attr("cy", function (d) {
-                                    return mercProj([d.long, d.lat])[1];
-                                })
-                                .attr("r", 5)
-                                .style("fill", "blue")
-                                .style("opacity", d => obsScale(d.count))
-                                .on("mouseover", d => console.log("Observation count:", d.count));
                         }
-                    });
+                    })
+            },
+
+            rebuildFromData(data) {
+
+                let self = this;
+
+
+
+                let mercProj = d3.geoAlbers()
+                    .center([-10, 45])
+                    .rotate([105, 0])
+                    .parallels([35, 55])
+                    .scale(400)
+                    .translate([self.width / 2, self.height / 2]);
+
+
+
+
+                let maxObs = d3.max(self.demoData, function(d) { return +d.count;} );
+
+                console.log("maxObs", maxObs);
+
+
+                let obsScale = function(count){
+
+                    if(typeof count !== "number")
+                    {
+                        return 1/maxObs*2;
+                    }
+                    else{
+                        return count/maxObs*2;
+                    }
+                }
+
+                //Could something like this work for the opacity scale?
+                //let tempScale = d3.scaleLinear().domain([minObs, maxObs]).range([.2, 1]);
+
+
+
+                let svg = d3.select("#mapSvg");
+
+                console.log("this.selectedData", this.selectedData);
+
+
+
+
+                console.log("data", data);
+
+                svg.selectAll("circle")
+                    .data(data)
+                    .join("circle")
+                    .attr("cx", function (d) {
+                        return mercProj([d.long, d.lat])[0];
+                    })
+                    .attr("cy", function (d) {
+                        return mercProj([d.long, d.lat])[1];
+                    })
+                    .attr("r", 5)
+
+                    .style("fill", "blue")
+                    .style("opacity", d => obsScale(d.count))
+                    .on("mouseover", d => console.log("Observation count:", d.count));
+
+            },
+
+
+            rebuildDemoMap() {
+
+                let self = this;
+
+
+
+                let mercProj = d3.geoAlbers()
+                    .center([-10, 45])
+                    .rotate([105, 0])
+                    .parallels([35, 55])
+                    .scale(400)
+                    .translate([self.width / 2, self.height / 2]);
+
+
+
+
+                let maxObs = d3.max(self.demoData, function(d) { return +d.count;} );
+
+                console.log("maxObs", maxObs);
+
+
+                let obsScale = function(count){
+
+                    if(typeof count !== "number")
+                    {
+                        return 1/maxObs*2;
+                    }
+                    else{
+                        return count/maxObs*2;
+                    }
+                }
+
+                //Could something like this work for the opacity scale?
+                //let tempScale = d3.scaleLinear().domain([minObs, maxObs]).range([.2, 1]);
+
+
+
+                let svg = d3.select("#mapSvg");
+
+                console.log("this.selectedData", this.selectedData);
+
+                let data = null;
+
+                if(typeof this.selectedData === "null"){
+                    data = [];
+                }
+                else{
+                    data = this.selectedData;
+                }
+
+                console.log("data", data);
+
+                svg.selectAll("circle")
+                    .data(data)
+                    .join("circle")
+                    .attr("font-size", d => console.log("d inside circles", d))
+                    .attr("cx", function (d) {
+                        return mercProj([d.long, d.lat])[0];
+                    })
+                    .attr("cy", function (d) {
+                        return mercProj([d.long, d.lat])[1];
+                    })
+                    .attr("r", 5)
+
+                    .style("fill", "blue")
+                    .style("opacity", d => obsScale(d.count))
+                    .on("mouseover", d => console.log("Observation count:", d.count));
+
             },
 
             initializeSliders()
@@ -140,8 +242,6 @@
                     new seasonalData("pre-migration", new Date(this.activeYear, 2, 1), new Date(this.activeYear, 5, 31)),
                     new seasonalData("post-migration", new Date(this.activeYear, 9, 1), new Date(this.activeYear, 10, 31))
                 ]
-
-
                 //Add season selector rectangles
                 let seasonRectGroup = d3.select("#seasonSVG").append("g").attr("class", "selectRect");
                 //let rectData = [{"time": "year-round", "pos": 0}, {"time": "breeding", "pos": 100}, {"time": "pre-migration", "pos": 200}, {"time": "post-migration", "pos": 300}];
@@ -160,7 +260,6 @@
                     .attr("y", 45)
                     .style("font-weight", "bold")
                     .text(d => d.type)
-
                 //Build the Axis
                 console.log([new Date(this.activeYear, 0, 1), new Date(this.activeYear, 11, 31)])
                 let seasonScale = d3.scaleTime().domain([new Date(this.activeYear, 0, 1), new Date(this.activeYear, 11, 31)]).range([25,750])
@@ -169,9 +268,6 @@
                     .attr("transform", "translate(0, 120)")
                     .attr("class", "seasonAxis")
                     .call(seasonAxis)
-
-
-
                 //Build the brushable box
                 d3.select("#seasonSVG").append("g").attr("class", "brushRectGroup").attr("transform", "translate(0, 90)")
                     .selectAll("rect")
@@ -181,12 +277,10 @@
                     .attr("height", 30)
                     .attr("x", d => seasonScale(d.start))
                     .attr("class", d => d.type)
-
                 //Add the brush
                 let brush = d3.brushX().extent([[0, 0], [that.width, 30]])
                     .on("start", () => {
                         console.log("Brushing started")
-
                     })
                     .on("brush", () => {
                         console.log("Brushing")
@@ -195,7 +289,6 @@
                         if (selection)
                         {
                             //Check how much was brushed.
-
                         }
                     })
                     .on("end", () => {
@@ -203,20 +296,30 @@
                         const [left, right] = d3.event.selection;
                         if(!d3.event.selection)
                         {
-                            that.activeSeason = [new Date(this.activeYear, 0, 1), new Date(this.activeYear, 11, 31)]
+                            that.activeSeason = [new Date(that.activeYear, 0, 1), new Date(that.activeYear, 11, 31)]
                         }
                         else
                         {
                             that.activeSeason = [seasonScale.invert(left), seasonScale.invert(right)]
+
+                            console.log("active season", that.activeSeason);
                             //Here we subset the data set using the new season.
-                            that.activeData = that.demoData.filter(d => { 
-                                if (new Date(d.date) <= that.activeSeason[1] && new Date(d.date) >= that.activeSeason[0]){return true} 
+                            that.selectedData = that.demoData.filter(d => {
+                                if (new Date(d.date) <= that.activeSeason[1] && new Date(d.date) >= that.activeSeason[0]){return true}
                                 else {return false}
                             })
 
-                            console.log("new data: ", that.activeData)
+                            console.log(that.activeYear);
+                            console.log("new data: ", that.selectedData)
                             console.log("new season: ", that.activeSeason)
                         }
+
+                        let data = that.selectedData;
+
+                        console.log("that.data", data);
+
+                        that.rebuildFromData(data);
+
                     })
 
                 d3.select("#seasonSVG").append("g").attr("class", "brushGroup").attr("transform", "translate(0, 90)").call(brush)
@@ -230,21 +333,51 @@
                 //Add season selector rectangles
                 let seasonRectGroup = d3.select(".selectRect")
                 seasonRectGroup.selectAll("rect")
-                               .data(seasonalData)
-                               .join("rect")
-                               .attr("width", 40)
-                               .attr("height", 20)
-                               .attr("x", (d,i) => i * 100)
-                               .attr("class", d => d.type)
-                               .on("click", d => d3.select(".brushGroup").call(brush.move, [seasonScale(d.start), seasonScale(d.end)]));
-
+                    .data(seasonalData)
+                    .join("rect")
+                    .attr("width", 40)
+                    .attr("height", 20)
+                    .attr("x", (d,i) => i * 100)
+                    .attr("class", d => d.type)
+                    .on("click", d => d3.select(".brushGroup").call(brush.move, [seasonScale(d.start), seasonScale(d.end)]));
                 seasonRectGroup.selectAll("text")
-                               .data(seasonalData)
-                               .join("text")
-                               .attr("x", (d,i) => i * 100)
-                               .attr("y", 45)
-                               .style("font-weight", "bold")
-                               .text(d => d.type)
+                    .data(seasonalData)
+                    .join("text")
+                    .attr("x", (d,i) => i * 100)
+                    .attr("y", 45)
+                    .style("font-weight", "bold")
+                    .text(d => d.type)
+                //Build the brushable box
+                d3.select(".brushRectGroup").selectAll("rect")
+                    .data(seasonalData)
+                    .join("rect")
+                    .attr("width", d => seasonScale(d.end) - seasonScale(d.start))
+                    .attr("height", 30)
+                    .attr("x", d => seasonScale(d.start))
+                    .attr("class", d => d.type)
+            },
+
+            filterDataByYear(year){
+
+
+                let filteredData = this.demoData.filter(d => {
+
+
+                    let date = new Date(d.date)
+
+                    let y = date.getFullYear();
+
+                    if(parseInt(year) === parseInt(y) ){
+                        return true;
+                    }
+                    else{
+                        return false;
+                    }
+
+                });
+
+                return filteredData;
+
 
                 //Build the brushable box
                 d3.select(".brushRectGroup").selectAll("rect")
@@ -264,14 +397,14 @@
                 let that = this;
 
                 //Slider to change the activeYear of the data
-                let yearScale = d3.scaleLinear().domain([2004, 2016]).range([30, 730]);
+                let yearScale = d3.scaleLinear().domain([2013, 2018]).range([30, 600]);
 
                 let yearSlider = d3.select('#activeYear-bar')
                     .append('div').classed('slider-wrap', true)
                     .append('input').classed('slider', true)
                     .attr('type', 'range')
-                    .attr('min', 2004)
-                    .attr('max', 2016)
+                    .attr('min', 2013)
+                    .attr('max', 2018)
                     .attr('value', this.activeYear)
 
                 let sliderLabel = d3.select('.slider-wrap')
@@ -295,26 +428,44 @@
 
 
         },
+
+        beforeMount(){
+
+
+
+        },
         mounted() {
+
+            this.initMap();
+            this.initializeSliders();
+
+            this.selectedYear = "2016";
 
         },
         watch: {
             selectedSpecies: function () {
 
+                let data = this.filterDataByYear(this.activeYear);
+
+                this.rebuildFromData(data);
+                // this.rebuildDemoMap();
             },
 
-            selectedYear: function () {
+            selectedDate: function(){
+                // this.selectedData = filterByDate(selectedData, selectedDate);
+            },
+
+            activeYear: function(){
+
+                let data = this.filterDataByYear(this.activeYear);
+
+                this.rebuildFromData(data);
 
             },
 
-            selectedSeason: function (){
-
+            demoData: function(){
+                this.selectedData = this.demoData;
             },
-
-            demoData: function () {
-                this.buildDemoMap();
-                this.initializeSliders();
-            }
 
         }
     }
