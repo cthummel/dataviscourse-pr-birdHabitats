@@ -8,13 +8,25 @@ library(dplyr)
 library(tidyr)
 library(stringr)
 library(ggplot2)
+library(geojsonio)
 # resolve namespace conflicts
 select <- dplyr::select
 extract <- raster::extract
 
+
+#Edit these to change what raster we produce
+printDirectory = "~/dataVis/"
+birdcode = "baleag"
+birdCommonName = "Bald Eagle"
+
+
+
+
+
+
 # download to a temp directory for the vigette
 # in practice, change to permanent directory the status and trends downloads
-sp_path <- ebirdst_download(species = "baleag")
+sp_path <- ebirdst_download(species = birdcode)
 # load the abundance data
 # this automaticaaly labels layers with their dates
 abd <- load_raster("abundance_umean", path = sp_path)
@@ -63,7 +75,7 @@ ne_land <- st_transform(ne_land, crs = mollweide)
 
 
 # subset to the yellow-bellied sapsucker season definitions
-yebsap_dates <- filter(ebirdst_runs, species_code == "baleag") %>% 
+bird_dates <- filter(ebirdst_runs, species_code == birdcode) %>% 
   # just keep the seasonal definition columns
   select(setdiff(matches("(start)|(end)"), matches("year_round"))) %>% 
   # transpose
@@ -73,15 +85,15 @@ yebsap_dates <- filter(ebirdst_runs, species_code == "baleag") %>%
   spread(start_end, date) %>% 
   select(season, start_dt, end_dt)
 # did the season pass review
-yebsap_dates <- mutate(yebsap_dates, pass = !(is.na(start_dt) | is.na(end_dt)))
-yebsap_dates
+bird_dates <- mutate(bird_dates, pass = !(is.na(start_dt) | is.na(end_dt)))
+bird_dates
 
 # dates for each abundance layer
 weeks <- parse_raster_dates(abd)
 # assign to seasons
 weeks_season <- rep(NA_character_, length(weeks))
-for (i in seq_len(nrow(yebsap_dates))) {
-  s <- yebsap_dates[i, ]
+for (i in seq_len(nrow(bird_dates))) {
+  s <- bird_dates[i, ]
   # skip seasona assignment if season failed
   if (!s$pass) {
     next()
@@ -261,7 +273,7 @@ for (i in seq_along(legend_seasons)) {
                      legend.args = list(text = legend_title, side = 3, 
                                         cex = 0.9, col = "black", line = 0.1))
 }
-title("Bald Eagle Relative Abundance (birds per km/hr)", 
+title(paste(birdCommonName, "Relative Abundance (birds per km/hr)", sep = " "), 
       line = -1, cex.main = 1)
 
 
@@ -379,7 +391,7 @@ names(rng_legend) <- names(rng_legend) %>%
   str_replace_all("_", " ") %>% 
   str_to_title()
 legend("bottomleft", legend = names(rng_legend), fill = rng_legend)
-title("Bald Eagle Seasonal Range Map", 
+title(paste(birdCommonName, "Seasonal Range Map", sep= " "), 
       line = -1, cex.main = 1)
 
 
@@ -442,4 +454,11 @@ title("Bald Eagle Seasonal Range Map",
 # plot(wh_states, border = "white", lwd = 1.5, add = TRUE)
 # 
 
-writeRaster(pred_region, filename = "~/dataVis/baldEagleRaster.tif", format="GTiff", bylayer=TRUE, suffix='numbers')
+writeRaster(pred_region, filename = paste(printDirectory, birdcode, "Raster.tif", sep = ""), format="GTiff", bylayer=TRUE, suffix='numbers')
+geojson_write(range_smooth, file = paste(printDirectory, birdcode, "RangeSmooth.geojson", sep = "" ))
+
+
+
+
+
+
