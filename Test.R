@@ -441,3 +441,5 @@ title("Bald Eagle Seasonal Range Map",
 # # add state boundaries on top
 # plot(wh_states, border = "white", lwd = 1.5, add = TRUE)
 # 
+
+writeRaster(pred_region, filename = "~/dataVis/baldEagleRaster.tif", format="GTiff", bylayer=TRUE, suffix='numbers')
