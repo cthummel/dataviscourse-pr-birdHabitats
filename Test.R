@@ -396,67 +396,67 @@ title(paste(birdCommonName, "Seasonal Range Map", sep= " "),
 
 
 
-# # to add context, let's pull in some reference data to add
-# wh_states <- ne_states(country = c("United States of America", "Canada"),
-#                        returnclass = "sf") %>% 
-#   st_transform(crs = mollweide) %>% 
-#   st_geometry()
-# 
-# # well plot a week in the middle of summer
-# week26_moll <- projectRaster(abunds[[26]], crs = mollweide, method = "ngb")
-# 
-# # set graphics params
-# par(mfrow = c(1, 1), mar = c(0, 0, 0, 6))
-# 
-# # use the extent object to set the spatial extent for the plot
-# plot(st_as_sfc(st_bbox(trim(week26_moll))), col = "white", border = "white")
-# 
-# # add background spatial context
-# plot(wh_states, col = "#eeeeee", border = NA, add = TRUE)
-# 
-# # plot zeroes as gray
-# plot(week26_moll == 0, col = "#dddddd", 
-#      maxpixels = ncell(week26_moll),
-#      axes = FALSE, legend = FALSE, add = TRUE)
-# 
-# # define color bins
-# qcol <- abundance_palette(length(year_bins$bins) - 1, "weekly")
-# 
-# # plot abundances
-# plot(week26_moll, breaks = year_bins$bins, col = qcol, 
-#      maxpixels = ncell(week26_moll),
-#      axes = FALSE, legend = FALSE, add = TRUE)
-# 
-# # for legend, create a smaller set of bin labels
-# bin_labels <- format(round(year_bins$bins, 2), nsmall = 2)
-# bin_labels[!(bin_labels %in% c(bin_labels[1],
-#                                bin_labels[round((length(bin_labels) / 2)) + 1],
-#                                bin_labels[length(bin_labels)]))] <- ""
-# bin_labels <- c("0", bin_labels)
-# 
-# # create colors that include gray for 0
-# lcol <- c("#dddddd", qcol)
-# 
-# # set legend such that color ramp appears linearly
-# ltq <- seq(from = year_bins$bins[1], 
-#            to = year_bins$bins[length(year_bins$bins)],
-#            length.out = length(year_bins$bins))
-# ltq <- c(0, ltq)
-# 
-# # plot legend
-# plot(week26_moll^year_bins$power, legend.only = TRUE,
-#      col = lcol, breaks = ltq^year_bins$power, 
-#      lab.breaks = bin_labels, 
-#      legend.shrink = 0.97, legend.width = 2, 
-#      axis.args = list(cex.axis = 0.9, lwd.ticks = 0))
-# 
-# # add state boundaries on top
-# plot(wh_states, border = "white", lwd = 1.5, add = TRUE)
-# 
+# to add context, let's pull in some reference data to add
+wh_states <- ne_states(country = c("United States of America", "Canada"),
+                       returnclass = "sf") %>%
+  st_transform(crs = mollweide) %>%
+  st_geometry()
+
+# well plot a week in the middle of summer
+week26_moll <- projectRaster(abunds[[26]], crs = mollweide, method = "ngb")
+
+# set graphics params
+par(mfrow = c(1, 1), mar = c(0, 0, 0, 6))
+
+# use the extent object to set the spatial extent for the plot
+plot(st_as_sfc(st_bbox(trim(week26_moll))), col = "white", border = "white")
+
+# add background spatial context
+plot(wh_states, col = "#eeeeee", border = NA, add = TRUE)
+
+# plot zeroes as gray
+plot(week26_moll == 0, col = "#dddddd",
+     maxpixels = ncell(week26_moll),
+     axes = FALSE, legend = FALSE, add = TRUE)
+
+# define color bins
+qcol <- abundance_palette(length(year_bins$bins) - 1, "weekly")
+
+# plot abundances
+plot(week26_moll, breaks = year_bins$bins, col = qcol,
+     maxpixels = ncell(week26_moll),
+     axes = FALSE, legend = FALSE, add = TRUE)
+
+# for legend, create a smaller set of bin labels
+bin_labels <- format(round(year_bins$bins, 2), nsmall = 2)
+bin_labels[!(bin_labels %in% c(bin_labels[1],
+                               bin_labels[round((length(bin_labels) / 2)) + 1],
+                               bin_labels[length(bin_labels)]))] <- ""
+bin_labels <- c("0", bin_labels)
+
+# create colors that include gray for 0
+lcol <- c("#dddddd", qcol)
+
+# set legend such that color ramp appears linearly
+ltq <- seq(from = year_bins$bins[1],
+           to = year_bins$bins[length(year_bins$bins)],
+           length.out = length(year_bins$bins))
+ltq <- c(0, ltq)
+
+# plot legend
+plot(week26_moll^year_bins$power, legend.only = TRUE,
+     col = lcol, breaks = ltq^year_bins$power,
+     lab.breaks = bin_labels,
+     legend.shrink = 0.97, legend.width = 2,
+     axis.args = list(cex.axis = 0.9, lwd.ticks = 0))
+
+# add state boundaries on top
+plot(wh_states, border = "white", lwd = 1.5, add = TRUE)
+
 
 writeRaster(pred_region, filename = paste(printDirectory, birdcode, "Raster.tif", sep = ""), format="GTiff", bylayer=TRUE, suffix='numbers')
 geojson_write(range_smooth, file = paste(printDirectory, birdcode, "RangeSmooth.geojson", sep = "" ))
-
+write.csv(bird_dates, file = paste(printDirectory, birdcode, "Dates.csv", sep = ""))
 
 
 

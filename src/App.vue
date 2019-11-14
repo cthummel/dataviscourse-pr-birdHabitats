@@ -62,6 +62,12 @@ export default {
 
       let self = this;
 
+      d3.json("geoJSONBALDIE.geojson", function(d) {
+        
+
+
+      }).then(function(data){ console.log("here is geojson", data.features);});
+
       //thank gosh d3 properly handles the whitespace
       d3.dsv("\t", "smallTest.txt", function(d) {
 

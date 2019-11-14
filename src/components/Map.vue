@@ -53,7 +53,7 @@
                     .attr("width", self.width)
                     .attr("height", self.height);
 
-                let mercProj = d3.geoAlbers()
+                let mercProj = d3.geoMollweide()
                     .center([-10, 45])
                     .rotate([105, 0])
                     .parallels([35, 55])
@@ -293,13 +293,13 @@
                     })
                     .on("end", () => {
                         console.log("Brushing Complete", d3.event.selection)
-                        const [left, right] = d3.event.selection;
-                        if(!d3.event.selection)
+                        if(d3.event.selection == null)
                         {
                             that.activeSeason = [new Date(that.activeYear, 0, 1), new Date(that.activeYear, 11, 31)]
                         }
                         else
                         {
+                            const [left, right] = d3.event.selection;
                             that.activeSeason = [seasonScale.invert(left), seasonScale.invert(right)]
 
                             console.log("active season", that.activeSeason);
@@ -397,7 +397,7 @@
                 let that = this;
 
                 //Slider to change the activeYear of the data
-                let yearScale = d3.scaleLinear().domain([2013, 2018]).range([30, 600]);
+                let yearScale = d3.scaleLinear().domain([2013, 2018]).range([30, 700]);
 
                 let yearSlider = d3.select('#activeYear-bar')
                     .append('div').classed('slider-wrap', true)
@@ -424,6 +424,17 @@
                     d3.select("#activeYear-bar").select(".slider-wrap").select(".slider-label").select("text").attr("x", yearScale(that.activeYear)).text(that.activeYear)
                     //that.updatePlot(that.activeYear, xdrop, ydrop, cdrop);
                 });
+            },
+
+            drawRaster: function(){
+                // console.log("features", rasterData.features);
+
+                // let path = d3.geoPath().projection(this.projection);
+                // d3.select("#mapSvg").append("g").attr("class", "rasterGroup")
+                //                                 .selectAll("path")
+                //                                 .data(rasterData.features)
+                //                                 .join("path")
+                //                                 .attr("d", path)
             }
 
 
@@ -438,6 +449,7 @@
 
             this.initMap();
             this.initializeSliders();
+            //this.drawRaster();
 
             this.selectedYear = "2016";
 
