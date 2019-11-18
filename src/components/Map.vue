@@ -1,13 +1,11 @@
-/* eslint-disable */
 <template>
     <div id="Map">
-    <svg id="mapSvg">
+        <svg id="mapSvg">
 
 
-    </svg>
-        <br>
-    <div id="seasonDiv">
-    </div>
+        </svg>
+        <div id="seasonDiv">
+        </div>
 
         <div id="activeYear-bar">
 
@@ -18,8 +16,6 @@
 <script>
 
 
-
-
     import {seasonalData} from './../../js/seasonalData'
 
 
@@ -28,26 +24,37 @@
 
         props: {
             selectedSpecies: null,
-            selectedSeason: null,
-            demoData: null,
         },
 
         data() {
             return {
 
+                activeYear: null,
                 selectedData: null,
                 width: 700,
                 height: 650,
                 projection: null,
-                activeYear: "2016",
                 selectedDate: null,
+                file: null,
+                files: null,
+                yearDict: null,
+                speciesDict: null,
+                initBool: null,
+                fileMap: {
+                    "Yellow-bellied Sapsucker": {
+                        file: "data/yebsap50k.json",
+                        color: "blue"
+                    }, "Rufous Hummingbird": {file: "data/rufhum50k.json", color: "red"}
+                    }
 
             }
         },
         methods: {
-            initMap(){
+            initMap() {
 
                 let self = this;
+
+                console.log("initMap");
 
                 let svg = d3.select("#mapSvg")
                     .attr("width", self.width)
@@ -64,7 +71,7 @@
                 let path = d3.geoPath()
                     .projection(mercProj);
 
-                d3.json("north-america.json")
+                d3.json("data/north-america.json")
                     .then(function (json) {
                         {
 
@@ -81,10 +88,9 @@
                     })
             },
 
-            rebuildFromData(data) {
+            rebuildFromSelectedData(data) {
 
                 let self = this;
-
 
 
                 let mercProj = d3.geoAlbers()
@@ -95,45 +101,30 @@
                     .translate([self.width / 2, self.height / 2]);
 
 
+                //
+                // let maxObs = d3.max(self.selectedData, function(d) { return +d.count;} );
+                //
+                // console.log("maxObs", maxObs);
 
 
-                let maxObs = d3.max(self.demoData, function(d) { return +d.count;} );
+                let obsScale = function (count) {
 
-                console.log("maxObs", maxObs);
+                    return parseInt(count) / 20;
 
 
-                let obsScale = function(count){
-
-                    if(typeof count !== "number")
-                    {
-                        return 1/maxObs*2;
-                    }
-                    else{
-                        return count/maxObs*2;
-                    }
-                }
-
-                //Could something like this work for the opacity scale?
-                //let tempScale = d3.scaleLinear().domain([minObs, maxObs]).range([.2, 1]);
-
+                };
 
 
                 let svg = d3.select("#mapSvg");
 
-                console.log("this.selectedData", this.selectedData);
-
-
-
-
-                console.log("data", data);
 
                 svg.selectAll("circle")
                     .data(data)
                     .join("circle")
-                    .attr("cx", function (d) {
+                    .attr("cx", d => {
                         return mercProj([d.long, d.lat])[0];
                     })
-                    .attr("cy", function (d) {
+                    .attr("cy", d => {
                         return mercProj([d.long, d.lat])[1];
                     })
                     .attr("r", 5)
@@ -145,78 +136,7 @@
             },
 
 
-            rebuildDemoMap() {
-
-                let self = this;
-
-
-
-                let mercProj = d3.geoAlbers()
-                    .center([-10, 45])
-                    .rotate([105, 0])
-                    .parallels([35, 55])
-                    .scale(400)
-                    .translate([self.width / 2, self.height / 2]);
-
-
-
-
-                let maxObs = d3.max(self.demoData, function(d) { return +d.count;} );
-
-                console.log("maxObs", maxObs);
-
-
-                let obsScale = function(count){
-
-                    if(typeof count !== "number")
-                    {
-                        return 1/maxObs*2;
-                    }
-                    else{
-                        return count/maxObs*2;
-                    }
-                }
-
-                //Could something like this work for the opacity scale?
-                //let tempScale = d3.scaleLinear().domain([minObs, maxObs]).range([.2, 1]);
-
-
-
-                let svg = d3.select("#mapSvg");
-
-                console.log("this.selectedData", this.selectedData);
-
-                let data = null;
-
-                if(typeof this.selectedData === "null"){
-                    data = [];
-                }
-                else{
-                    data = this.selectedData;
-                }
-
-                console.log("data", data);
-
-                svg.selectAll("circle")
-                    .data(data)
-                    .join("circle")
-                    .attr("font-size", d => console.log("d inside circles", d))
-                    .attr("cx", function (d) {
-                        return mercProj([d.long, d.lat])[0];
-                    })
-                    .attr("cy", function (d) {
-                        return mercProj([d.long, d.lat])[1];
-                    })
-                    .attr("r", 5)
-
-                    .style("fill", "blue")
-                    .style("opacity", d => obsScale(d.count))
-                    .on("mouseover", d => console.log("Observation count:", d.count));
-
-            },
-
-            initializeSliders()
-            {
+            initializeSliders() {
                 d3.select("#seasonDiv")
                     .append("svg")
                     .attr("width", this.width)
@@ -231,11 +151,23 @@
                 this.drawYearBar();
             },
 
-            drawSeason: function()
-            {
+            drawSeason: function () {
                 let that = this;
                 //let monthDict = {0: "January", 1: "Februrary", 2: "March", 3: "April", 4: "May", 5: "June", 6: "July", 7: "August", 8: "September", 9: "October", 10: "November", 11: "December"}
-                let monthDict = {0: "Jan", 1: "Feb", 2: "Mar", 3: "Apr", 4: "May", 5: "Jun", 6: "Jul", 7: "Aug", 8: "Sept", 9: "Oct", 10: "Nov", 11: "Dec"}
+                let monthDict = {
+                    0: "Jan",
+                    1: "Feb",
+                    2: "Mar",
+                    3: "Apr",
+                    4: "May",
+                    5: "Jun",
+                    6: "Jul",
+                    7: "Aug",
+                    8: "Sept",
+                    9: "Oct",
+                    10: "Nov",
+                    11: "Dec"
+                }
                 let tempData = [
                     new seasonalData("year-round", new Date(this.activeYear, 0, 1), new Date(this.activeYear, 11, 31)),
                     new seasonalData("breeding", new Date(this.activeYear, 6, 1), new Date(this.activeYear, 8, 31)),
@@ -250,20 +182,22 @@
                     .join("rect")
                     .attr("width", 40)
                     .attr("height", 20)
-                    .attr("x", (d,i) => i * 100)
+                    .attr("x", (d, i) => i * 100)
                     .attr("class", d => d.type)
                     .on("click", d => d3.select(".brushGroup").call(brush.move, [seasonScale(d.start), seasonScale(d.end)]));
                 seasonRectGroup.selectAll("text")
                     .data(tempData)
                     .join("text")
-                    .attr("x", (d,i) => i * 100)
+                    .attr("x", (d, i) => i * 100)
                     .attr("y", 45)
                     .style("font-weight", "bold")
                     .text(d => d.type)
                 //Build the Axis
                 console.log([new Date(this.activeYear, 0, 1), new Date(this.activeYear, 11, 31)])
-                let seasonScale = d3.scaleTime().domain([new Date(this.activeYear, 0, 1), new Date(this.activeYear, 11, 31)]).range([25,750])
-                let seasonAxis = d3.axisBottom().scale(seasonScale).ticks(11).tickFormat(d => {return monthDict[d.getMonth()]})
+                let seasonScale = d3.scaleTime().domain([new Date(this.activeYear, 0, 1), new Date(this.activeYear, 11, 31)]).range([25, 750])
+                let seasonAxis = d3.axisBottom().scale(seasonScale).ticks(11).tickFormat(d => {
+                    return monthDict[d.getMonth()]
+                })
                 d3.select("#seasonSVG").append("g")
                     .attr("transform", "translate(0, 120)")
                     .attr("class", "seasonAxis")
@@ -286,27 +220,26 @@
                         console.log("Brushing")
                         const selection = d3.event.selection;
                         const [left, right] = selection;
-                        if (selection)
-                        {
+                        if (selection) {
                             //Check how much was brushed.
                         }
                     })
                     .on("end", () => {
                         console.log("Brushing Complete", d3.event.selection)
                         const [left, right] = d3.event.selection;
-                        if(!d3.event.selection)
-                        {
+                        if (!d3.event.selection) {
                             that.activeSeason = [new Date(that.activeYear, 0, 1), new Date(that.activeYear, 11, 31)]
-                        }
-                        else
-                        {
+                        } else {
                             that.activeSeason = [seasonScale.invert(left), seasonScale.invert(right)]
 
                             console.log("active season", that.activeSeason);
                             //Here we subset the data set using the new season.
-                            that.selectedData = that.demoData.filter(d => {
-                                if (new Date(d.date) <= that.activeSeason[1] && new Date(d.date) >= that.activeSeason[0]){return true}
-                                else {return false}
+                            that.selectedData = that.selectedData.filter(d => {
+                                if (new Date(d.date) <= that.activeSeason[1] && new Date(d.date) >= that.activeSeason[0]) {
+                                    return true
+                                } else {
+                                    return false
+                                }
                             })
 
                             console.log(that.activeYear);
@@ -314,13 +247,8 @@
                             console.log("new season: ", that.activeSeason)
                         }
 
-                        let data = that.selectedData;
-
-                        console.log("that.data", data);
-
-                        that.rebuildFromData(data);
-
                     })
+
 
                 d3.select("#seasonSVG").append("g").attr("class", "brushGroup").attr("transform", "translate(0, 90)").call(brush)
             },
@@ -328,8 +256,7 @@
             /**
              * Called when bird changes in case seasonal data is different.
              */
-            updateSeasonalDisplay: function(seasonalData)
-            {
+            updateSeasonalDisplay: function (seasonalData) {
                 //Add season selector rectangles
                 let seasonRectGroup = d3.select(".selectRect")
                 seasonRectGroup.selectAll("rect")
@@ -337,13 +264,13 @@
                     .join("rect")
                     .attr("width", 40)
                     .attr("height", 20)
-                    .attr("x", (d,i) => i * 100)
+                    .attr("x", (d, i) => i * 100)
                     .attr("class", d => d.type)
                     .on("click", d => d3.select(".brushGroup").call(brush.move, [seasonScale(d.start), seasonScale(d.end)]));
                 seasonRectGroup.selectAll("text")
                     .data(seasonalData)
                     .join("text")
-                    .attr("x", (d,i) => i * 100)
+                    .attr("x", (d, i) => i * 100)
                     .attr("y", 45)
                     .style("font-weight", "bold")
                     .text(d => d.type)
@@ -357,43 +284,22 @@
                     .attr("class", d => d.type)
             },
 
-            filterDataByYear(year){
+            filterDataByYear(value) {
 
+                if(value.hasOwnProperty(this.activeYear)){
 
-                let filteredData = this.demoData.filter(d => {
+                    return value[this.activeYear];
 
+                }
 
-                    let date = new Date(d.date)
-
-                    let y = date.getFullYear();
-
-                    if(parseInt(year) === parseInt(y) ){
-                        return true;
-                    }
-                    else{
-                        return false;
-                    }
-
-                });
-
-                return filteredData;
-
-
-                //Build the brushable box
-                d3.select(".brushRectGroup").selectAll("rect")
-                               .data(seasonalData)
-                               .join("rect")
-                               .attr("width", d => seasonScale(d.end) - seasonScale(d.start))
-                               .attr("height", 30)
-                               .attr("x", d => seasonScale(d.start))
-                               .attr("class", d => d.type)
+                return ["swag"];
             },
 
 
             /**
              * Draws the slider for the Year Bar
              */
-            drawYearBar: function() {
+            drawYearBar: function () {
                 let that = this;
 
                 //Slider to change the activeYear of the data
@@ -418,130 +324,251 @@
                 sliderText.attr('x', yearScale(this.activeYear));
                 sliderText.attr('y', 25);
 
-                yearSlider.on('input', function() {
+                yearSlider.on('input', function () {
                     //YOUR CODE HERE
                     that.activeYear = this.value;
                     d3.select("#activeYear-bar").select(".slider-wrap").select(".slider-label").select("text").attr("x", yearScale(that.activeYear)).text(that.activeYear)
                     //that.updatePlot(that.activeYear, xdrop, ydrop, cdrop);
+
+
                 });
+            },
+
+            buildYearDict(data) {
+
+                let yearsGen = function (start, stop) {
+
+                    let years = [];
+                    while (start <= stop) {
+                        years.push(start++);
+                    }
+                    return years;
+                };
+
+                let yearDict = {};
+
+                let years = yearsGen(2012, 2018);
+
+                for (let i = 0; i < years.length; i++) {
+
+                    let yearObservations = data.filter(d => d.date.slice(0, 4) === years[i].toString());
+
+                    yearDict[years[i]] = yearObservations.slice(0, 604);
+
+                }
+
+                console.log("yearDict", yearDict);
+
+                this.yearDict = yearDict;
+
+                return yearDict;
+
+
+            },
+
+
+
+            getFileFromSpecies(species) {
+
+                let file = "";
+
+                if (this.fileMap.hasOwnProperty(species)) {
+                    file = this.fileMap[species].file;
+
+                }
+
+                return file;
+
+
+            },
+
+            initSelectedData: function () {
+
+                let self = this;
+
+
+                this.selectedData = [];
+
+
+                let values = Object.values(this.speciesDict);
+
+                for(let i = 0; i < values.length; i++){
+                    let v = values[i];
+
+                    let data = this.filterDataByYear(v);
+
+                    for(let j = 0; j < data.length; j++){
+                        this.selectedData.push(data[j]);
+
+                    }
+                }
+            },
+
+            buildSpeciesDict(speciesList) {
+
+
+                let self = this;
+                console.log("speciesList", speciesList);
+
+
+                let promises = [];
+
+                self.speciesDict = {};
+
+                for (let i = 0; i < speciesList.length; i++) {
+                    let species = speciesList[i];
+                    let file = this.getFileFromSpecies(species);
+
+                    let p = new Promise((resolve) => {
+                        d3.json(file).then(function (data) {
+
+
+                            console.log("data", data);
+
+                            data = self.filterByObsDur(data);
+
+                            if (self.speciesDict.hasOwnProperty(file)) {
+
+                            } else {
+
+                                let yearDict = self.buildYearDict(data);
+
+                                resolve(self.speciesDict[file] = yearDict);
+                            }
+
+                        });
+                    });
+
+                    promises.push(p);
+                }
+
+                Promise.all(promises).then(values => {
+                    console.log(values); // [3, 1337, "foo"]
+                    self.initSelectedData();
+                });
+
+            },
+
+            filterByObsDur(data) {
+
+                let newData = data.filter(d => parseInt(d.obsDur) < "120");
+
+                return newData;
+
+
+            },
+        },
+
+            beforeMount() {
+                console.log("before mount");
+
+
+            },
+            mounted() {
+                console.log("map mounted");
+                this.initMap();
+                this.initializeSliders();
+                this.activeYear = 2012;
+
+
+            },
+            watch: {
+                selectedSpecies: function () {
+
+                    this.buildSpeciesDict(this.selectedSpecies);
+                },
+
+                activeYear: function () {
+                    // if (this.initBool) {
+                    //     this.initSelectedData();
+                    // }
+                },
+
+
+                selectedData: function () {
+
+                    let data = this.selectedData
+                    this.rebuildFromSelectedData(data);
+
+                }
+
+
             }
-
-
-        },
-
-        beforeMount(){
-
-
-
-        },
-        mounted() {
-
-            this.initMap();
-            this.initializeSliders();
-
-            this.selectedYear = "2016";
-
-        },
-        watch: {
-            selectedSpecies: function () {
-
-                let data = this.filterDataByYear(this.activeYear);
-
-                this.rebuildFromData(data);
-                // this.rebuildDemoMap();
-            },
-
-            selectedDate: function(){
-                // this.selectedData = filterByDate(selectedData, selectedDate);
-            },
-
-            activeYear: function(){
-
-                let data = this.filterDataByYear(this.activeYear);
-
-                this.rebuildFromData(data);
-
-            },
-
-            demoData: function(){
-                this.selectedData = this.demoData;
-            },
-
         }
-    }
 </script>
 
 <style>
 
-    .year-round{
+    .year-round {
         fill: lightgreen;
     }
 
-    .breeding{
+    .breeding {
         fill: aqua;
     }
 
-    .pre-migration{
+    .pre-migration {
         fill: coral;
     }
 
-    .post-migration{
+    .post-migration {
         fill: hotpink;
     }
+
     #seasonDiv {
         margin-left: 50px;
     }
 
     .slider {
-    -webkit-appearance: none;
-    width: 725px;
-    height: 15px;
-    border-radius: 5px;
-    background: #d3d3d3;
-    outline: none;
-    opacity: 0.7;
-    -webkit-transition: .2s;
-    transition: opacity .2s;
-    margin-left: 20px
+        -webkit-appearance: none;
+        width: 725px;
+        height: 15px;
+        border-radius: 5px;
+        background: #d3d3d3;
+        outline: none;
+        opacity: 0.7;
+        -webkit-transition: .2s;
+        transition: opacity .2s;
+        margin-left: 20px
     }
 
     .slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 25px;
-    height: 25px;
-    border-radius: 50%;
-    background: #4CAF50;
-    cursor: pointer;
-}
+        -webkit-appearance: none;
+        appearance: none;
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        background: #4CAF50;
+        cursor: pointer;
+    }
 
-.slider::-moz-range-thumb {
-    width: 25px;
-    height: 25px;
-    border-radius: 50%;
-    background: #D4E157;
-    cursor: pointer;
-}
+    .slider::-moz-range-thumb {
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        background: #D4E157;
+        cursor: pointer;
+    }
 
-.slider:hover {
-    opacity: 1;
-}
+    .slider:hover {
+        opacity: 1;
+    }
 
-.slider-label svg {
-    width: 750px;
-    height: 35px;
-}
+    .slider-label svg {
+        width: 750px;
+        height: 35px;
+    }
 
-.slider-label svg text {
-    text-anchor: middle;
-}
+    .slider-label svg text {
+        text-anchor: middle;
+    }
 
-.slider-wrap {
-    display: inline-block;
-    float: left;
-    width: 750px;
-    margin-left: 50px;
-}
+    .slider-wrap {
+        display: inline-block;
+        float: left;
+        width: 750px;
+        margin-left: 50px;
+    }
 
 </style>
 

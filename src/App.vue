@@ -1,4 +1,3 @@
-/* eslint-disable */
 <template>
   <div id="app">
       <div>
@@ -9,14 +8,14 @@
 
         <br>
         <h4>Select a species to visualize</h4>
-        <v-select                class="vs__dropdown-toggle"
-                                  v-model="selectedSpecies" :options="allSpecies"> </v-select>
+        <v-select              multiple
+                                  v-model="selectedSpecies" :options="allSpecies" filled chips multipl> </v-select>
       </header>
 
 
 
       <br>
-      <Map :demoData="demoData" :selectedSpecies="selectedSpecies"></Map>
+      <Map :selectedSpecies="selectedSpecies"></Map>
 
 
     </div>
@@ -32,7 +31,6 @@ import BubbleChart from './components/BubbleChart.vue'
 import Map from './components/Map.vue'
 import ParallelCoords from './components/ParallelCoords'
 
-
 export default {
   name: 'app',
   components: {
@@ -42,58 +40,48 @@ export default {
   },
 
   data() { return {
-    allSpecies: ["Yellow-bellied Sapsucker"],
+    allSpecies: ["Yellow-bellied Sapsucker", "Rufous Hummingbird"],
     selectedSpecies: null,
-
-    allYears: ["2007", "2008", "2009", "2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017", "2018"],
-    selectedYear: null,
-
-    demoData: null,
     }
   },
   methods : {
 
-    initWithDemoData(){
+    logFileJson(){
 
-      this.selectedYear = "2018";
-    },
-
-    buildDemoData(){
-
-      let self = this;
-
-      //thank gosh d3 properly handles the whitespace
-      d3.dsv("\t", "smallTest.txt", function(d) {
-
+      d3.dsv("\t", "data/rufhum50k.txt", function(d) {
         return {
           commonName: d['COMMON NAME'],
           lat: parseFloat(d.LATITUDE),
           long: parseFloat(d.LONGITUDE),
           count: d['OBSERVATION COUNT'],
-            date: d['LAST EDITED DATE'],
-
+          date: d['LAST EDITED DATE'],
+          obsDur: d['DURATION MINUTES']
         };
-
       }).then(function(data) {
-        self.demoData = data;
+        // self.demoData = data;
 
+        let log = JSON.stringify(data);
+        console.log("log", log);
       });
+
     }
+
 
   },
 
   beforeMount(){
-    this.buildDemoData();
+    // this.logFileJson();
   },
 
   mounted() {
 
+    console.log("is app even running?");
+
+
+
   },
   watch : {
 
-    demoData: function(){
-      this.initWithDemoData();
-    }
 
   }
 }
