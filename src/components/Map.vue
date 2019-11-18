@@ -88,6 +88,19 @@
                     })
             },
 
+
+            getColorFromName(name){
+
+                console.log(name);
+                if(name === "Yellow-bellied Sapsucker"){
+                    return "blue";
+                }
+                else if(name === "Rufous Hummingbird"){
+                    return "red";
+                }
+                return "black";
+            },
+
             rebuildFromSelectedData(data) {
 
                 let self = this;
@@ -129,7 +142,10 @@
                     })
                     .attr("r", 5)
 
-                    .style("fill", "blue")
+                    .style("fill", d =>{
+                       return self.getColorFromName(d.commonName);
+
+                    })
                     .style("opacity", d => obsScale(d.count))
                     .on("mouseover", d => console.log("Observation count:", d.count));
 
@@ -443,7 +459,8 @@
                 }
 
                 Promise.all(promises).then(values => {
-                    console.log(values); // [3, 1337, "foo"]
+                    console.log(values);
+                    self.initBool = true;// [3, 1337, "foo"]
                     self.initSelectedData();
                 });
 
@@ -479,9 +496,9 @@
                 },
 
                 activeYear: function () {
-                    // if (this.initBool) {
-                    //     this.initSelectedData();
-                    // }
+                    if (this.initBool) {
+                        this.initSelectedData();
+                    }
                 },
 
 
