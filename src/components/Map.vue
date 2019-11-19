@@ -1,5 +1,16 @@
 <template>
     <div id="Map">
+
+        <div id="speciesObservationalFreqs">
+
+            <ul>
+                <li v-for="f in selectedFrequencies">
+                    Total Observation Frequency for {{f.name}}: {{ f.count /f.obsDur }}
+                </li>
+            </ul>
+
+        </div>
+
         <svg id="mapSvg">
 
 
@@ -28,7 +39,7 @@
 
         data() {
             return {
-
+                selectedFrequencies: null,
                 activeYear: null,
                 selectedData: null,
                 width: 700,
@@ -120,11 +131,31 @@
                 // console.log("maxObs", maxObs);
 
 
-                let obsScale = function (count) {
+                let totalCount = 0;
+                let totalDur = 0;
 
-                    return parseInt(count) / 20;
+                self.selectedFrequencies = [];
+
+                for(let i = 0; i < self.selectedSpecies.length; i++){
+                    self.selectedFrequencies.push({name: self.selectedSpecies[i],count: 0, obsDur: 0});
+                }
 
 
+                let obsScale = function (d) {
+
+                    let count = isNaN(parseInt(d.count)) ? 0 : parseInt(d.count);
+                   let  obsDur = isNaN(parseInt(d.obsDur)) ? 0 : parseInt(d.obsDur);
+
+                   let index = self.selectedSpecies.indexOf(d.commonName);
+
+
+
+
+                    self.selectedFrequencies[index].count += count;
+                    self.selectedFrequencies[index].obsDur += obsDur;
+
+                    let opac =  count / obsDur;
+                    return opac;
                 };
 
 
@@ -146,8 +177,12 @@
                        return self.getColorFromName(d.commonName);
 
                     })
-                    .style("opacity", d => obsScale(d.count))
+                    .style("opacity", d => obsScale(d))
                     .on("mouseover", d => console.log("Observation count:", d.count));
+
+                let totalFreq = totalCount/totalDur;
+
+                console.log("totalCount, totalDur", totalCount, totalDur, totalFreq);
 
             },
 
@@ -363,7 +398,7 @@
 
                 let yearDict = {};
 
-                let years = yearsGen(2012, 2018);
+                let years = yearsGen(2008, 2018);
 
                 for (let i = 0; i < years.length; i++) {
 
@@ -441,7 +476,7 @@
 
                             console.log("data", data);
 
-                            data = self.filterByObsDur(data);
+                            // data = self.filterByObsDur(data);
 
                             if (self.speciesDict.hasOwnProperty(file)) {
 
