@@ -1,6 +1,6 @@
 <template>
     <div id="Map">
-
+        <button class="trendButton">Show Trend</button>
         <div id="speciesObservationalFreqs">
 
             <ul>
@@ -10,7 +10,6 @@
             </ul>
 
         </div>
-
         <svg id="mapSvg">
 
 
@@ -40,7 +39,7 @@
         data() {
             return {
                 selectedFrequencies: null,
-                activeYear: null,
+                activeYear: 2012,
                 selectedData: null,
                 width: 700,
                 height: 650,
@@ -51,6 +50,7 @@
                 yearDict: null,
                 speciesDict: null,
                 initBool: null,
+                showTrend: false,
                 fileMap: {
                     "Yellow-bellied Sapsucker": {
                         file: "data/yebsap50k.json",
@@ -71,13 +71,28 @@
                     .attr("width", self.width)
                     .attr("height", self.height);
 
-                let mercProj = d3.geoMollweide()
+                d3.select(".trendButton").on("click", function(){
+                    if(self.showTrend)
+                    {
+                        self.hideTrend()
+                        self.showTrend = false;
+                    }
+                    else
+                    {
+                        self.displayTrend()
+                        self.showTrend = true;
+                    }
+                })
+
+
+                let mercProj = d3.geoAlbers()
                     .center([-10, 45])
                     .rotate([105, 0])
                     .parallels([35, 55])
                     .scale(400)
                     .translate([self.width / 2, self.height / 2]);
 
+                this.projection = mercProj;
 
                 let path = d3.geoPath()
                     .projection(mercProj);
@@ -357,13 +372,13 @@
                 let that = this;
 
                 //Slider to change the activeYear of the data
-                let yearScale = d3.scaleLinear().domain([2013, 2018]).range([30, 700]);
+                let yearScale = d3.scaleLinear().domain([2012, 2018]).range([30, 700]);
 
                 let yearSlider = d3.select('#activeYear-bar')
                     .append('div').classed('slider-wrap', true)
                     .append('input').classed('slider', true)
                     .attr('type', 'range')
-                    .attr('min', 2013)
+                    .attr('min', 2012)
                     .attr('max', 2018)
                     .attr('value', this.activeYear)
 
@@ -512,6 +527,141 @@
 
 
             },
+
+            displayTrend()
+            {
+                let that = this;
+                let combinedFreqList = []
+                let birdIndexDict = {}
+                for(var i = 0; i < this.selectedSpecies.length; i++)
+                {
+                    birdIndexDict[that.selectedSpecies[i]] = i; 
+                }
+                console.log("birdDict", birdIndexDict, birdIndexDict["Yellow-bellied Sapsucker"])
+
+                let circleSizer = function(d) {
+                    let cScale = d3.scaleSqrt().range([5, 20]).domain([cMin, cMax]);
+                    return d ? cScale(d) : 5;
+                };
+
+                let currentTrend = this.selectedSpecies.map(function (element) {
+                    return {
+                        "name": element,
+                        "lat": 0,
+                        "long": 0,
+                        "freq": 0
+                    }
+                })
+                let finalTrend = this.selectedSpecies.map(function (element) {
+                    return {
+                        "name": element,
+                        "lat": 0,
+                        "long": 0,
+                        "freq": 0
+                    }
+                })
+                let combinedTrend = this.selectedSpecies.map(function (element) {
+                    return {
+                        "name": element,
+                        "currentYearLat": 0,
+                        "currentYearLong": 0,
+                        "currentYearFreq": 0,
+                        "finalYearLat": 0,
+                        "finalYearLong": 0,
+                        "finalYearFreq": 0
+                    }
+                })
+                
+
+                for(const bird in this.yearDict[2018])
+                {
+                    if (that.yearDict[2018][bird].count == "X" || that.yearDict[2018][bird].obsDur == "")
+                    {
+                        continue;
+                    }
+                    let freq = +that.yearDict[2018][bird].count * 60 / +that.yearDict[2018][bird].obsDur;
+                    finalTrend[birdIndexDict[that.yearDict[2018][bird].commonName]].lat  += freq * that.yearDict[2018][bird].lat 
+                    finalTrend[birdIndexDict[that.yearDict[2018][bird].commonName]].long += freq * that.yearDict[2018][bird].long 
+                    finalTrend[birdIndexDict[that.yearDict[2018][bird].commonName]].freq += freq 
+                }
+                for(var record in finalTrend)
+                {
+                    finalTrend[record].lat = finalTrend[record].lat / finalTrend[record].freq
+                    finalTrend[record].long = finalTrend[record].long / finalTrend[record].freq
+                    combinedTrend[birdIndexDict[finalTrend[record].name]].finalYearLat = finalTrend[record].lat
+                    combinedTrend[birdIndexDict[finalTrend[record].name]].finalYearLong = finalTrend[record].long
+                    combinedTrend[birdIndexDict[finalTrend[record].name]].finalYearFreq = finalTrend[record].freq
+                    combinedFreqList.push(finalTrend[record].freq)
+                }
+                
+                for(const bird in this.selectedData)
+                {
+                    if (that.selectedData[bird].count == "X" || that.selectedData[bird].obsDur == "")
+                    {
+                        continue;
+                    }
+                    let freq = +that.selectedData[bird].count * 60 / +that.selectedData[bird].obsDur;
+                    currentTrend[birdIndexDict[that.selectedData[bird].commonName]].lat += freq * that.selectedData[bird].lat 
+                    currentTrend[birdIndexDict[that.selectedData[bird].commonName]].long += freq * that.selectedData[bird].long 
+                    currentTrend[birdIndexDict[that.selectedData[bird].commonName]].freq += freq 
+                }
+                for(var record in currentTrend)
+                {
+                    currentTrend[record].lat = currentTrend[record].lat / currentTrend[record].freq
+                    currentTrend[record].long = currentTrend[record].long / currentTrend[record].freq
+                    combinedTrend[birdIndexDict[currentTrend[record].name]].currentYearLat = currentTrend[record].lat
+                    combinedTrend[birdIndexDict[currentTrend[record].name]].currentYearLong = currentTrend[record].long
+                    combinedTrend[birdIndexDict[currentTrend[record].name]].currentYearFreq = currentTrend[record].freq
+                    combinedFreqList.push(currentTrend[record].freq)
+                }
+                
+                console.log("current", currentTrend)
+                console.log("final", finalTrend)
+                console.log("combined", combinedTrend)
+
+                //For circle sizing
+                let cMin = d3.min(combinedFreqList);
+                let cMax = d3.max(combinedFreqList);
+
+                //Draw the circles and connecting line on map
+                d3.select("#mapSvg").selectAll(".trendLine").data(combinedTrend).join("line")
+                                    .attr("class", "trendLine")
+                                    .attr("x1", d => that.projection(d.currentYearLong))
+                                    .attr("y1", d => that.projection(d.currentYearLat))
+                                    .attr("x2", d => that.projection(d.finalYearLong))
+                                    .attr("y2", d => that.projection(d.finalYearLat))
+                                    .style("stroke-width", 5)
+
+                d3.select("#mapSvg").selectAll(".trendStartCircle").data(currentTrend).join("circle")
+                                    .attr("class", "trendStartCircle")
+                                    .attr("cx", d => that.projection(d.long))
+                                    .attr("cy", d => that.projection(d.lat))
+                                    .attr("r", d => circleSizer(d.freq))
+                                    .style("fill", "green")
+                                    .style("stroke", "black")
+                                    //.title(d => d.freq)
+
+                d3.select("#mapSvg").selectAll(".trendEndCircle").data(finalTrend).join("circle")
+                                    .attr("class", "trendEndCircle")
+                                    .attr("cx", d => that.projection(d.long))
+                                    .attr("cy", d => that.projection(d.lat))
+                                    .attr("r", d => circleSizer(d.freq))
+                                    .style("fill", "green")
+                                    .style("stroke", "black")
+                                    //.title(d => d.freq)
+
+                //Swap the display on the button
+                d3.select(".trendButton").text("Hide Trend")
+
+            },
+
+            hideTrend()
+            {
+                d3.selectAll(".trendLine").remove()
+                d3.selectAll(".trendStartCircle").remove()
+                d3.selectAll(".trendEndCircle").remove()
+                d3.select(".trendButton").text("Show Trend")
+            },
         },
 
             beforeMount() {
@@ -537,6 +687,10 @@
                     if (this.initBool) {
                         this.initSelectedData();
                     }
+                    if(this.showTrend)
+                    {
+                        this.displayTrend();
+                    }
                 },
 
 
@@ -544,6 +698,10 @@
 
                     let data = this.selectedData
                     this.rebuildFromSelectedData(data);
+                    if (this.showTrend)
+                    {
+                        this.displayTrend();
+                    }
 
                 }
 
@@ -623,6 +781,23 @@
         float: left;
         width: 750px;
         margin-left: 50px;
+    }
+    .trendButton {
+        background: white;
+        border: 2px solid rgb(16, 126, 252);
+        border-radius: 6px;
+        color: rgb(16, 126, 252);
+        padding: 20px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        width: 150px;
+    }
+    .trendButton:hover {
+        background: rgb(16, 126, 252);
+        color: white;
     }
 
 </style>
