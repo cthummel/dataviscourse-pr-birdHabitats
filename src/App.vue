@@ -16,6 +16,7 @@
 
       <br>
       <Map :selectedSpecies="selectedSpecies"></Map>
+      <LineChart :selectedSpecies="selectedSpecies"></LineChart>
 
 
     </div>

@@ -12,11 +12,11 @@
         name: 'lineChart',
         props: {
             selectedSpecies: null,
+            speciesDict: null,
         },
 
         data() {
             return {
-                yearDict: null,
                 freqDict: null,
                 activeSeason:[new Date(this.activeYear, 0, 1), new Date(this.activeYear, 11, 31)],
                 lineChartXScale: null,
@@ -89,7 +89,28 @@
              * Adds the yearly frequency for each bird selected.
              */
             updateFreqDict(yearDataSet){
-                
+                let that = this
+                let birdIndexDict = {}
+                let newFreqDict = {}
+                for(var i = 0; i < this.selectedSpecies.length; i++)
+                {
+                    birdIndexDict[that.selectedSpecies[i]] = i; 
+                }
+
+                for(var i = 2012; i < this.speciesDict.length + 2012; i++)
+                {
+                    for(var j = 0; j < that.selectedSpecies.length; j++)
+                    {
+                        let temp = that.speciesDict[selectedSpecies[j]].filter(d => {if (d.commonName == selectedSpecies[j]){return true}else{return false}})
+                        let birdFreq = 0;
+                        for(var k = 0; k < temp.length; k++)
+                        {
+                            birdFreq += +temp[k].count * 60 / +temp[k].obsDur;
+                        }
+                        birdFreq = birdFreq / temp.length;
+                        mew
+                    }
+                }
 
             },
 
@@ -135,6 +156,9 @@
 
     #lineChart{
         overflow: hidden;
+    }
+    .line:hover{
+        stroke-width: 10px
     }
 
 
