@@ -30,6 +30,7 @@
 <script>
 import BubbleChart from './components/BubbleChart.vue'
 import Map from './components/Map.vue'
+import LineChart from './components/LineChart.vue'
 import ParallelCoords from './components/ParallelCoords'
 
 export default {
@@ -37,6 +38,7 @@ export default {
   components: {
     BubbleChart,
     Map,
+    LineChart,
     ParallelCoords
   },
 

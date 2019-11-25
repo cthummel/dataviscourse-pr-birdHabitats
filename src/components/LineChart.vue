@@ -18,6 +18,7 @@
         data() {
             return {
                 freqDict: null,
+                maxFreq: 0,
                 activeSeason:[new Date(this.activeYear, 0, 1), new Date(this.activeYear, 11, 31)],
                 lineChartXScale: null,
                 lineChartYScale: null,
@@ -34,16 +35,15 @@
              * Initialize values on start up for the line chart display.
              */
             initLineChart() {
-                let freqMax = d3.max(freqDict)
-
-                this.lineChartXScale = d3.scaleLinear().domain([0, 7]).range([0, this.width]);
-                let lineChartXAxis = d3.axisBottom().scale(lineChartXScale).tickFormat(d => d + 2012)
+                let that = this;
+                this.lineChartXScale = d3.scaleLinear().domain([2010, 2018]).range([0, this.width]);
+                let lineChartXAxis = d3.axisBottom().scale(lineChartXScale).tickFormat(d => d)
                 d3.select("#lineChartSvg").append("g")
                                           .attr("transform", "translate(0, " + this.height + ")")
                                           .attr("class", "lineChartXAxis")
                                           .call(lineChartXAxis)
 
-                this.lineChartYScale = d3.scaleLinear().domain([0, freqMax]).range([this.height, 0]);
+                this.lineChartYScale = d3.scaleLinear().domain([0, that.freqMax]).range([this.height, 0]);
                 let lineChartYAxis = d3.axisLeft().scale(lineChartYScale)
                 d3.select("#lineChartSvg").append("g")
                                           .attr("class", "lineChartYAxis")
@@ -70,13 +70,13 @@
                                       .curve(d3.curveMonotoneX)
 
                 //Update path
-                d3.select("#lineChartSvg").append("path").data(dataset) 
+                d3.select("#lineChartSvg").selectAll("path").data(freqDict).join("path")
                                           .attr("class", "line") 
-                                          .attr("d", d => lineGenerator(d))
+                                          .attr("d", d => lineGenerator(d.data))
                                           .on("click", console.log("select this bird now pls"))
 
                 //Generate circles for the year data 
-                d3.select("#lineChartSvg").selectAll(".lineChartCircle").data(dataset).join("circle")
+                d3.select("#lineChartSvg").selectAll(".lineChartCircle").data(freqDict.data).join("circle")
                                           .attr("class", "lineChartCircle") 
                                           .attr("cx", d => that.lineChartXScale(d.year))
                                           .attr("cy", d => that.lineChartYScale(d.freq))
@@ -88,30 +88,36 @@
             /**
              * Adds the yearly frequency for each bird selected.
              */
-            updateFreqDict(yearDataSet){
+            updateFreqDict(){
                 let that = this
-                let birdIndexDict = {}
-                let newFreqDict = {}
-                for(var i = 0; i < this.selectedSpecies.length; i++)
-                {
-                    birdIndexDict[that.selectedSpecies[i]] = i; 
-                }
-
-                for(var i = 2012; i < this.speciesDict.length + 2012; i++)
-                {
-                    for(var j = 0; j < that.selectedSpecies.length; j++)
+                let max = 0;
+                that.freqDict = selectedSpecies.map(function (element){
+                    let tempBirdDict = {
+                        "commonName": element,
+                        "year": [],
+                        "freq": [],
+                        "data": [{"year": 0, "freq": 0}],
+                        "line": "d"
+                    }
+                    for(var j = 2010; j < that.speciesDict[element].length + 2010; j++)
                     {
-                        let temp = that.speciesDict[selectedSpecies[j]].filter(d => {if (d.commonName == selectedSpecies[j]){return true}else{return false}})
+                        let temp = that.speciesDict[element][j]//.filter(d => {if (d.commonName == selectedSpecies[j]){return true}else{return false}})
                         let birdFreq = 0;
                         for(var k = 0; k < temp.length; k++)
                         {
                             birdFreq += +temp[k].count * 60 / +temp[k].obsDur;
                         }
-                        birdFreq = birdFreq / temp.length;
-                        mew
+                        if(max < birdFreq)
+                        {
+                            max = birdFreq;
+                        }
+                        tempBirdDict.year.push(j)
+                        tempBirdDict.freq.push(birdFreq)
+                        tempBirdDict.data.push({"year": j, "freq": birdFreq})
                     }
-                }
-
+                    return tempBirdDict
+                })
+                this.freqMax = max;
             },
 
             buildBubbleChart() {
@@ -131,7 +137,7 @@
                                    .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")")
                                    .attr("id", "lineChartSvg")
 
-
+            this.updateFreqDict();
             this.initLineChart()
         },
 
