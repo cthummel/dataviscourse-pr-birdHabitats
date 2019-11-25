@@ -30,7 +30,9 @@
         methods: {
 
 
-
+            /**
+             * Initialize values on start up for the line chart display.
+             */
             initLineChart() {
                 let freqMax = d3.max(freqDict)
 
@@ -68,18 +70,18 @@
                                       .curve(d3.curveMonotoneX)
 
                 //Update path
-                svg.append("path").data(dataset) 
-                                  .attr("class", "line") 
-                                  .attr("d", d => lineGenerator(d))
-                                  .on("click", console.log("select this bird now pls"))
+                d3.select("#lineChartSvg").append("path").data(dataset) 
+                                          .attr("class", "line") 
+                                          .attr("d", d => lineGenerator(d))
+                                          .on("click", console.log("select this bird now pls"))
 
                 //Generate circles for the year data 
-                svg.selectAll(".dot").data(dataset).join("circle")
-                                     .attr("class", "lineChartCircle") 
-                                     .attr("cx", d => that.lineChartXScale(d.year))
-                                     .attr("cy", d => that.lineChartYScale(d.freq))
-                                     .attr("r", 5)
-                                     .on("click", console.log("select this bird now pls"))
+                d3.select("#lineChartSvg").selectAll(".lineChartCircle").data(dataset).join("circle")
+                                          .attr("class", "lineChartCircle") 
+                                          .attr("cx", d => that.lineChartXScale(d.year))
+                                          .attr("cy", d => that.lineChartYScale(d.freq))
+                                          .attr("r", 5)
+                                          .on("click", console.log("select this bird now pls"))
 
             },
 
@@ -100,9 +102,15 @@
         mounted() {
             this.width = 700 - this.margin.left - this.margin.right;
             this.height = 650 - this.margin.top - this.margin.bottom;
+
             d3.select("#lineChart").append("svg")
                                    .attr("width", this.width + this.margin.left + this.margin.right)
                                    .attr("height", this.height + this.margin.top + this.margin.bottom)
+                                   .append("g")
+                                   .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")")
+                                   .attr("id", "lineChartSvg")
+
+
             this.initLineChart()
         },
 
