@@ -41,7 +41,7 @@ export default {
 
   data() { return {
     allSpecies: ["Yellow-bellied Sapsucker", "Rufous Hummingbird"],
-    selectedSpecies: null,
+    selectedSpecies: [],
     }
   },
   methods : {

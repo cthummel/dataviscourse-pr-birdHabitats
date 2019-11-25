@@ -5,7 +5,7 @@
 
             <ul>
                 <li v-for="f in selectedFrequencies">
-                    Total Observation Frequency for {{f.name}}: {{ f.count /f.obsDur }}
+                    Total Observation Frequency for {{f.name}}: {{ (f.count * 60 /f.obsDur).toFixed(3) }} (birds/hour)
                 </li>
             </ul>
 
@@ -79,8 +79,11 @@
                     }
                     else
                     {
-                        self.displayTrend()
-                        self.showTrend = true;
+                        if(self.selectedSpecies.length != 0)
+                        {
+                            self.displayTrend()
+                            self.showTrend = true;
+                        }
                     }
                 })
 
@@ -162,10 +165,6 @@
                    let  obsDur = isNaN(parseInt(d.obsDur)) ? 0 : parseInt(d.obsDur);
 
                    let index = self.selectedSpecies.indexOf(d.commonName);
-
-
-
-
                     self.selectedFrequencies[index].count += count;
                     self.selectedFrequencies[index].obsDur += obsDur;
 
@@ -205,7 +204,7 @@
             initializeSliders() {
                 d3.select("#seasonDiv")
                     .append("svg")
-                    .attr("width", this.width)
+                    .attr("width", this.width + 100)
                     .attr("height", 150).attr("id", "seasonSVG")
                     .attr("translate", "transform(0, " + this.height + ")");
 
@@ -278,32 +277,48 @@
                     .attr("x", d => seasonScale(d.start))
                     .attr("class", d => d.type)
                 //Add the brush
-                let brush = d3.brushX().extent([[0, 0], [that.width, 30]])
+                let brush = d3.brushX().extent([[0, 0], [that.width + 50, 30]])
                     .on("start", () => {
-                        console.log("Brushing started")
+                        
                     })
                     .on("brush", () => {
-                        console.log("Brushing")
+                        //console.log("Brushing")
                         const selection = d3.event.selection;
                         const [left, right] = selection;
-                        if (selection) {
+                        if (selection == null) {
                             //Check how much was brushed.
+                            that.activeSeason = [new Date(that.activeYear, 0, 1), new Date(that.activeYear, 11, 31)]
+                            that.selectedData = that.yearDict[that.activeYear]
+                        }
+                        else
+                        {
+                            that.activeSeason = [seasonScale.invert(left), seasonScale.invert(right)]
+                            console.log("active season", that.activeSeason);
+                            //Here we subset the data set using the new season.
+                            that.selectedData = that.yearDict[that.activeYear].filter(d => {
+                                if (new Date(d.date) <= that.activeSeason[1] && new Date(d.date) >= that.activeSeason[0]) {
+                                    return true
+                                } else {
+                                    return false
+                                }
+                            })
                         }
                     })
                     .on("end", () => {
-                        console.log("Brushing Complete", d3.event.selection)
+                        //console.log("Brushing Complete", d3.event.selection)
                         if(d3.event.selection == null)
                         {
                             that.activeSeason = [new Date(that.activeYear, 0, 1), new Date(that.activeYear, 11, 31)]
+                            that.selectedData = that.yearDict[that.activeYear]
                         }
                         else
                         {
                             const [left, right] = d3.event.selection;
                             that.activeSeason = [seasonScale.invert(left), seasonScale.invert(right)]
 
-                            console.log("active season", that.activeSeason);
+                            //console.log("active season", that.activeSeason);
                             //Here we subset the data set using the new season.
-                            that.selectedData = that.selectedData.filter(d => {
+                            that.selectedData = that.yearDict[that.activeYear].filter(d => {
                                 if (new Date(d.date) <= that.activeSeason[1] && new Date(d.date) >= that.activeSeason[0]) {
                                     return true
                                 } else {
@@ -311,9 +326,9 @@
                                 }
                             })
 
-                            console.log(that.activeYear);
-                            console.log("new data: ", that.selectedData)
-                            console.log("new season: ", that.activeSeason)
+                            // console.log(that.activeYear);
+                            // console.log("new data: ", that.selectedData)
+                            // console.log("new season: ", that.activeSeason)
                         }
 
                     })
@@ -539,6 +554,13 @@
                 }
                 console.log("birdDict", birdIndexDict, birdIndexDict["Yellow-bellied Sapsucker"])
 
+                let mercProj = d3.geoAlbers()
+                    .center([-10, 45])
+                    .rotate([105, 0])
+                    .parallels([35, 55])
+                    .scale(400)
+                    .translate([self.width / 2, self.height / 2]);
+
                 let circleSizer = function(d) {
                     let cScale = d3.scaleSqrt().range([5, 20]).domain([cMin, cMax]);
                     return d ? cScale(d) : 5;
@@ -615,9 +637,7 @@
                     combinedFreqList.push(currentTrend[record].freq)
                 }
                 
-                console.log("current", currentTrend)
-                console.log("final", finalTrend)
-                console.log("combined", combinedTrend)
+                
 
                 //For circle sizing
                 let cMin = d3.min(combinedFreqList);
@@ -626,16 +646,17 @@
                 //Draw the circles and connecting line on map
                 d3.select("#mapSvg").selectAll(".trendLine").data(combinedTrend).join("line")
                                     .attr("class", "trendLine")
-                                    .attr("x1", d => that.projection(d.currentYearLong))
-                                    .attr("y1", d => that.projection(d.currentYearLat))
-                                    .attr("x2", d => that.projection(d.finalYearLong))
-                                    .attr("y2", d => that.projection(d.finalYearLat))
+                                    .attr("x1", d => that.projection([d.currentYearLong, d.currentYearLat])[0])
+                                    .attr("y1", d => that.projection([d.currentYearLong, d.currentYearLat])[1])
+                                    .attr("x2", d => that.projection([d.finalYearLong, d.finalYearLat])[0])
+                                    .attr("y2", d => that.projection([d.finalYearLong, d.finalYearLat])[1])
                                     .style("stroke-width", 5)
+                                    .style("stroke", "black")
 
                 d3.select("#mapSvg").selectAll(".trendStartCircle").data(currentTrend).join("circle")
                                     .attr("class", "trendStartCircle")
-                                    .attr("cx", d => that.projection(d.long))
-                                    .attr("cy", d => that.projection(d.lat))
+                                    .attr("cx", d => that.projection([d.long, d.lat])[0])
+                                    .attr("cy", d => that.projection([d.long, d.lat])[1])
                                     .attr("r", d => circleSizer(d.freq))
                                     .style("fill", "green")
                                     .style("stroke", "black")
@@ -643,8 +664,8 @@
 
                 d3.select("#mapSvg").selectAll(".trendEndCircle").data(finalTrend).join("circle")
                                     .attr("class", "trendEndCircle")
-                                    .attr("cx", d => that.projection(d.long))
-                                    .attr("cy", d => that.projection(d.lat))
+                                    .attr("cx", d => that.projection([d.long, d.lat])[0])
+                                    .attr("cy", d => that.projection([d.long, d.lat])[1])
                                     .attr("r", d => circleSizer(d.freq))
                                     .style("fill", "green")
                                     .style("stroke", "black")
