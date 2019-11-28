@@ -12,17 +12,18 @@
         name: 'lineChart',
         props: {
             selectedSpecies: null,
-            speciesDict: null,
+            speciesDict: {},
         },
 
         data() {
             return {
                 freqDict: null,
                 maxFreq: 0,
-                activeSeason:[new Date(this.activeYear, 0, 1), new Date(this.activeYear, 11, 31)],
+                activeYear: 2010,
+                activeSeason:[new Date(2010, 0, 1), new Date(2011, 0, 1)],
                 lineChartXScale: null,
                 lineChartYScale: null,
-                margin: {top: 20, right: 10, bottom: 20, left: 10},
+                margin: {top: 20, right: 20, bottom: 20, left: 20},
                 width: null,
                 height: null,
             }
@@ -37,14 +38,14 @@
             initLineChart() {
                 let that = this;
                 this.lineChartXScale = d3.scaleLinear().domain([2010, 2018]).range([0, this.width]);
-                let lineChartXAxis = d3.axisBottom().scale(lineChartXScale).tickFormat(d => d)
+                let lineChartXAxis = d3.axisBottom().scale(this.lineChartXScale).tickFormat(d => d)
                 d3.select("#lineChartSvg").append("g")
                                           .attr("transform", "translate(0, " + this.height + ")")
                                           .attr("class", "lineChartXAxis")
                                           .call(lineChartXAxis)
 
                 this.lineChartYScale = d3.scaleLinear().domain([0, that.freqMax]).range([this.height, 0]);
-                let lineChartYAxis = d3.axisLeft().scale(lineChartYScale)
+                let lineChartYAxis = d3.axisLeft().scale(this.lineChartYScale)
                 d3.select("#lineChartSvg").append("g")
                                           .attr("class", "lineChartYAxis")
                                           .call(lineChartYAxis)
@@ -58,8 +59,7 @@
                 let that = this;
 
                 //Update the Y axis
-                let freqMax = d3.max(freqDict)
-                this.lineChartYScale = d3.scaleLinear().domain([0, freqMax]).range([this.height, 0]);
+                this.lineChartYScale = d3.scaleLinear().domain([0, this.maxFreq]).range([this.height, 0]);
                 let lineChartYAxis = d3.axisBottom().scale(lineChartYScale)
                 d3.select(".lineChartYAxis").call(lineChartYAxis)
 
@@ -91,17 +91,25 @@
             updateFreqDict(){
                 let that = this
                 let max = 0;
-                that.freqDict = selectedSpecies.map(function (element){
-                    let tempBirdDict = {
-                        "commonName": element,
+                let tempFreqDict = {}
+                this.selectedSpecies.map(function (element){
+                    tempFreqDict[element] = {
+                        //"commonName": element,
                         "year": [],
                         "freq": [],
                         "data": [{"year": 0, "freq": 0}],
                         "line": "d"
                     }
-                    for(var j = 2010; j < that.speciesDict[element].length + 2010; j++)
+                })
+                console.log("tempFreqDict",JSON.parse(JSON.stringify(tempFreqDict)))
+                this.selectedSpecies.map(function (element){
+                    that.speciesDict.forEach(function(species){console.log(species)})
+                    console.log(Object.keys(that.speciesDict[element]))
+                    for(var i = 0; i < Object.keys(speciesDict[element]).length; i++)
                     {
-                        let temp = that.speciesDict[element][j]//.filter(d => {if (d.commonName == selectedSpecies[j]){return true}else{return false}})
+                        let currentYear = Object.keys(that.speciesDict[element])[i];
+                        let temp = that.speciesDict[element][currentYear]//.filter(d => {if (d.commonName == selectedSpecies[j]){return true}else{return false}})
+                        console.log("temp", temp)
                         let birdFreq = 0;
                         for(var k = 0; k < temp.length; k++)
                         {
@@ -111,13 +119,42 @@
                         {
                             max = birdFreq;
                         }
-                        tempBirdDict.year.push(j)
-                        tempBirdDict.freq.push(birdFreq)
-                        tempBirdDict.data.push({"year": j, "freq": birdFreq})
+                        tempFreqDict[element].year.push(currentYear)
+                        tempFreqDict[element].freq.push(birdFreq)
+                        tempFreqDict[element].data.push({"year": j, "freq": birdFreq})
                     }
-                    return tempBirdDict
                 })
+
+                // let tempfreqDict = this.selectedSpecies.map(function (element){
+                //     let tempBirdDict = {
+                //         "commonName": element,
+                //         "year": [],
+                //         "freq": [],
+                //         "data": [{"year": 0, "freq": 0}],
+                //         "line": "d"
+                //     }
+                //     console.log("tempBirdDict", tempBirdDict, element, that.speciesDict[element]);
+                //     for(var j = 2010; j < that.speciesDict[element].length + 2010; j++)
+                //     {
+                //         let temp = that.speciesDict[element][j]//.filter(d => {if (d.commonName == selectedSpecies[j]){return true}else{return false}})
+                //         console.log("temp", temp)
+                //         let birdFreq = 0;
+                //         for(var k = 0; k < temp.length; k++)
+                //         {
+                //             birdFreq += +temp[k].count * 60 / +temp[k].obsDur;
+                //         }
+                //         if(max < birdFreq)
+                //         {
+                //             max = birdFreq;
+                //         }
+                //         tempBirdDict.year.push(j)
+                //         tempBirdDict.freq.push(birdFreq)
+                //         tempBirdDict.data.push({"year": j, "freq": birdFreq})
+                //     }
+                //     return tempBirdDict
+                // })
                 this.freqMax = max;
+                this.freqDict = tempfreqDict
             },
 
             buildBubbleChart() {
@@ -137,20 +174,24 @@
                                    .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")")
                                    .attr("id", "lineChartSvg")
 
-            this.updateFreqDict();
+            //this.updateFreqDict();
             this.initLineChart()
         },
 
         watch: {
-
             selectedSpecies: function () {
                 this.buildBubbleChart();
+            },
+
+            speciesDict: function(){
+                console.log("speciesDict changed", this.speciesDict)
+                this.updateFreqDict();
+                this.updateLineChart();
             },
 
             selectedYear: function(){
                 this.buildBubbleChart();
             }
-
         }
 
 

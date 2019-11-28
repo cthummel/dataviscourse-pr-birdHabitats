@@ -52,11 +52,10 @@
                 initBool: null,
                 showTrend: false,
                 fileMap: {
-                    "Yellow-bellied Sapsucker": {
-                        file: "data/yebsap50k.json",
-                        color: "blue"
-                    }, "Rufous Hummingbird": {file: "data/rufhum50k.json", color: "red"}
-                    }
+                    "Yellow-bellied Sapsucker": {file: "data/yebsap50k.json",color: "blue"},
+                    "Rufous Hummingbird": {file: "data/rufhum50k.json", color: "red"},
+                    "Henslow's Sparrow": {file: "data/henspa.json", color: "green"}
+                }
 
             }
         },
@@ -120,14 +119,21 @@
 
             getColorFromName(name){
 
-                console.log(name);
+                //console.log(name);
                 if(name === "Yellow-bellied Sapsucker"){
                     return "blue";
                 }
                 else if(name === "Rufous Hummingbird"){
                     return "red";
                 }
-                return "black";
+                else if (name == "Henslow's Sparrow")
+                {
+                    return "green"
+                }
+                else
+                {
+                    return "black";
+                }
             },
 
             rebuildFromSelectedData(data) {
@@ -369,14 +375,11 @@
             },
 
             filterDataByYear(value) {
-
                 if(value.hasOwnProperty(this.activeYear)){
 
                     return value[this.activeYear];
 
                 }
-
-                return ["swag"];
             },
 
 
@@ -436,21 +439,17 @@
                 for (let i = 0; i < years.length; i++) {
 
                     let yearObservations = data.filter(d => d.date.slice(0, 4) === years[i].toString());
-
-                    yearDict[years[i]] = yearObservations.slice(0, 604);
+                    console.log("yearObservations.length", yearObservations.length)
+                    yearDict[years[i]] = yearObservations.slice(0, yearObservations.length);
 
                 }
 
                 console.log("yearDict", yearDict);
-
                 this.yearDict = yearDict;
-
                 return yearDict;
 
 
             },
-
-
 
             getFileFromSpecies(species) {
 
@@ -460,10 +459,13 @@
                     file = this.fileMap[species].file;
 
                 }
-
                 return file;
+            },
 
-
+            sendDataBackToApp: function(data)
+            {
+                console.log("before sending", data)
+                this.$emit('update-species-dict', data)
             },
 
             initSelectedData: function () {
@@ -483,7 +485,6 @@
 
                     for(let j = 0; j < data.length; j++){
                         this.selectedData.push(data[j]);
-
                     }
                 }
             },
@@ -505,19 +506,14 @@
 
                     let p = new Promise((resolve) => {
                         d3.json(file).then(function (data) {
-
-
-                            console.log("data", data);
-
+                            //console.log("data", data);
                             // data = self.filterByObsDur(data);
 
                             if (self.speciesDict.hasOwnProperty(file)) {
 
                             } else {
-
                                 let yearDict = self.buildYearDict(data);
-
-                                resolve(self.speciesDict[file] = yearDict);
+                                resolve(self.speciesDict[species] = yearDict);
                             }
 
                         });
@@ -532,6 +528,7 @@
                     self.initSelectedData();
                 });
 
+                this.sendDataBackToApp(this.speciesDict)
             },
 
             filterByObsDur(data) {
@@ -700,7 +697,6 @@
             },
             watch: {
                 selectedSpecies: function () {
-
                     this.buildSpeciesDict(this.selectedSpecies);
                 },
 

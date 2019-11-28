@@ -15,8 +15,11 @@
 
 
       <br>
-      <Map :selectedSpecies="selectedSpecies"></Map>
-      <LineChart :selectedSpecies="selectedSpecies"></LineChart>
+      <div id="mainDisplay">
+        <Map @update-species-dict="updateSpeciesDict" :selectedSpecies="selectedSpecies"></Map>
+        <LineChart :selectedSpecies="selectedSpecies" :speciesDict="speciesDict"></LineChart>
+      </div>
+      
 
 
     </div>
@@ -43,8 +46,9 @@ export default {
   },
 
   data() { return {
-    allSpecies: ["Yellow-bellied Sapsucker", "Rufous Hummingbird"],
+    allSpecies: ["Yellow-bellied Sapsucker", "Rufous Hummingbird", "Henslow's Sparrow"],
     selectedSpecies: [],
+    speciesDict: {},
     }
   },
   methods : {
@@ -67,7 +71,15 @@ export default {
         console.log("log", log);
       });
 
-    }
+    },
+
+    updateSpeciesDict(e)
+    {
+      console.log("speciesDict Arrived", e, Object.getOwnPropertyDescriptors(e))
+
+      this.speciesDict = e;
+      console.log("the new speciesDict", this.speciesDict)
+    },
 
 
   },
@@ -77,8 +89,6 @@ export default {
   },
 
   mounted() {
-
-    console.log("is app even running?");
 
 
 
@@ -100,6 +110,10 @@ export default {
 
   #header-wrap{
       margin: 10px;
+  }
+
+  #mainDisplay{
+    display: flex;
   }
 
 
