@@ -1,5 +1,5 @@
 
-export class seasonalData{
+class seasonalData{
     /**
      * @param type Type of season for the bird
      * @param start Date of start of season
