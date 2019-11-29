@@ -1,4 +1,133 @@
-view
-{
-    background-color: rgb(0,0,0);
+#app{
+    width: 100%;
+    height: 100%;
+}
+
+
+#header-wrap{
+    margin: 10px;
+}
+
+#mainDisplay{
+    display: flex;
+}
+
+.year-round {
+    fill: lightgreen;
+}
+
+.breeding {
+    fill: aqua;
+}
+
+.pre-migration {
+    fill: coral;
+}
+
+.post-migration {
+    fill: hotpink;
+}
+
+#seasonDiv {
+    margin-left: 50px;
+}
+
+.slider {
+    -webkit-appearance: none;
+    width: 725px;
+    height: 15px;
+    border-radius: 5px;
+    background: #d3d3d3;
+    outline: none;
+    opacity: 0.7;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+    margin-left: 20px
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: #4CAF50;
+    cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: #D4E157;
+    cursor: pointer;
+}
+
+.slider:hover {
+    opacity: 1;
+}
+
+.slider-label svg {
+    width: 750px;
+    height: 35px;
+}
+
+.slider-label svg text {
+    text-anchor: middle;
+}
+
+.slider-wrap {
+    display: inline-block;
+    float: left;
+    width: 750px;
+    margin-left: 50px;
+}
+.trendButton {
+    background: white;
+    border: 2px solid rgb(16, 126, 252);
+    border-radius: 6px;
+    color: rgb(16, 126, 252);
+    padding: 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    width: 150px;
+}
+.trendButton:hover {
+    background: rgb(16, 126, 252);
+    color: white;
+}
+#lineChart{
+    overflow: hidden;
+}
+.line:hover{
+    stroke-width: 10px
+}
+
+/*tooltip */
+div.lineChartTooltip {
+    position: absolute;
+    text-align: center;
+    min-width: 60px;
+    padding: 2px;
+    background: white;
+    stroke: gray;
+    border-radius: 8px;
+    pointer-events: none;
+    border: 2px solid black;
+}
+
+.lineChartTooltip h1 {
+    margin: auto;
+    font: 18px sans-serif;
+}
+.lineChartTooltip h2 {
+    margin: auto;
+    font: 14px sans-serif;
+}
+
+.active input{
+    box-shadow: none;
 }

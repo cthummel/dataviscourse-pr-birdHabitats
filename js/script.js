@@ -1,16 +1,29 @@
 
-
+let that = this;
 let fileMap = {
-    "Yellow-bellied Sapsucker": {file: "data/yebsap50k.json",color: "blue"},
-    "Rufous Hummingbird": {file: "data/rufhum50k.json", color: "red"},
-    "Henslow's Sparrow": {file: "data/henspa.json", color: "green"}
+    "yebsap": {file: "data/yebsap50k.json",color: "blue"},
+    "rufhum": {file: "data/rufhum50k.json", color: "red"},
+    "henspa": {file: "data/henspa.json", color: "green"}
 }
 
 let allSpecies = [
-    "Yellow-bellied Sapsucker", 
-    "Rufous Hummingbird", 
-    "Henslow's Sparrow"
+    "yebsap", 
+    "rufhum", 
+    "henspa"
 ]
+
+let nameDict = 
+{
+    "yebsap": "Yellow-bellied Sapsucker", 
+    "rufhum": "Rufous Hummingbird", 
+    "henspa": "Henslow's Sparrow"
+}
+
+
+
+
+let birdButtonQueue = new semiQueue();
+birdButtonQueue.enqueue("henspa")
 
 let buildYearDict = function(data) {
     let yearsGen = function (start, stop) {
@@ -33,6 +46,44 @@ let buildYearDict = function(data) {
     return yearDict;
 }
 
+//Setup button array
+d3.select("#birdButtonArray").selectAll("label").data(allSpecies).join("label")
+    .attr("class", d => d == "henspa" ? "btn btn-primary active": "btn btn-secondary")
+    .attr("id", d => d + "Label")
+    .attr("for", d=> d + "Button")
+    .append("input")
+    .attr("type", "button")
+    .attr("name", d => d + "Button")
+    .attr("value", d => nameDict[d])
+    .on("click", d => {
+        console.log("You just clicked a button", d3.event, d3.select("#" + d + "Label"))
+        console.log(birdButtonQueue.items)
+        d3.select("#" + d + "Label").classed("active") ? d3.select("#" + d + "Label").attr("class", "btn btn-primary active"): d3.select("#" + d + "Label").attr("class", "btn btn-secondary")
+
+        if(d3.event.srcElement.checked)
+        {
+            birdButtonQueue.removeBird(d);
+        }
+        else
+        {
+            if(birdButtonQueue.items.length < 3)
+            {
+                birdButtonQueue.enqueue(d);
+            }
+            else
+            {
+                birdButtonQueue.dequeue();
+                birdButtonQueue.enqueue(d);
+            }
+        }
+
+        //Update displays with newly selected birds.
+        that.map.updateMap(birdButtonQueue.items);
+        //that.chart.updateSelectedSpecies(birdButtonQueue.items);
+    })
+
+
+
 let promises = [];
 let speciesDict = {};
 
@@ -40,12 +91,12 @@ for (let i = 0; i < allSpecies.length; i++) {
     let species = allSpecies[i];
     let file = fileMap[species].file;
     let p = new Promise((resolve) => {
-        d3.json(file).then(function (data) {
+        d3.json(file).then(data => 
             //console.log("data", data);
             // data = self.filterByObsDur(data);
             //let yearDict = ;
-            resolve(speciesDict[species] = buildYearDict(data));
-        });
+            resolve(speciesDict[species] = buildYearDict(data))
+        );
     });
     promises.push(p);
 }
@@ -55,12 +106,12 @@ Promise.all(promises).then(values => {
     //self.initSelectedData();
     //let map = new Map(["Henslow's Sparrow"], speciesDict);
     //let chart = new lineChart(["Henslow's Sparrow"], speciesDict);
-    let map = new Map(allSpecies, speciesDict);
-    let chart = new lineChart(allSpecies, speciesDict);
+    this.map = new Map(birdButtonQueue.items, speciesDict);
+    this.chart = new lineChart(allSpecies, speciesDict);
     map.setLineChart(lineChart);
     chart.setMap(map);
 })
-console.log(speciesDict)
+
 
 
 

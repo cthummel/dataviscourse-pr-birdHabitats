@@ -80,7 +80,7 @@ class lineChart {
 
         //Update path
         d3.select("#lineChartSvg").selectAll(".lineChartLine").data(that.freqDict).join("path")
-            .attr("class", d => "lineChartLine " + d.commonName)
+            .attr("class", d => "lineChartLine " + d.birdCode)
             .attr("d", d => lineGenerator(d.data))
             .style("fill", "none")
             .style("stroke", "black")
@@ -92,7 +92,7 @@ class lineChart {
             .attr("cy", d => that.lineChartYScale(d.freq))
             .attr("r", 5)
             .on("mouseover", d => {
-                let name = [d.commonName]
+                let name = [d.birdCode]
                 let output = this.tooltipRender(d);
                 let tool = d3.select(".lineChartTooltip").style("left", d3.event.pageX + 15 + "px")
                                                 .style("top", d3.event.pageY + 15 + "px")
@@ -101,7 +101,7 @@ class lineChart {
                 tool.selectAll("h2").data(output).join("h2").text(d => d)
             })
             .on("mouseout", () => d3.select(".lineChartTooltip").style("opacity", 0))
-            .on("click", d => d3.selectAll("lineChartLine " + d.commonName).classed("selected", true))
+            .on("click", d => d3.selectAll("lineChartLine " + d.birdCode).classed("selected", true))
 
     }
 
@@ -114,7 +114,7 @@ class lineChart {
         let tempFreqDict = [];
         this.selectedSpecies.map(function (element) {
             tempFreqDict.push ({
-                "commonName": element,
+                "birdCode": element,
                 //"year": [],
                 //"freq": [],
                 "data": [],
@@ -125,7 +125,7 @@ class lineChart {
         this.selectedSpecies.map(function (element, index) {
             for (var i = 0; i < Object.keys(data[element]).length; i++) {
                 let currentYear = Object.keys(data[element])[i];
-                let temp = data[element][currentYear]//.filter(d => {if (d.commonName == selectedSpecies[j]){return true}else{return false}})
+                let temp = data[element][currentYear]//.filter(d => {if (d.birdCode == selectedSpecies[j]){return true}else{return false}})
                 //console.log("temp", temp)
                 let birdFreq = 0;
                 let nonFaultyBirdCount = 0;
@@ -143,7 +143,7 @@ class lineChart {
                 if (max < birdFreq / nonFaultyBirdCount) {
                     max = birdFreq / nonFaultyBirdCount;
                 }
-                that.circleData.push({"year": currentYear, "freq": birdFreq / nonFaultyBirdCount, "commonName": element})
+                that.circleData.push({"year": currentYear, "freq": birdFreq / nonFaultyBirdCount, "birdCode": element})
                 //tempFreqDict[index].year.push(currentYear)
                 //tempFreqDict[index].freq.push(birdFreq / nonFaultyBirdCount)
                 tempFreqDict[index].data.push({ "year": currentYear, "freq": birdFreq / nonFaultyBirdCount})
@@ -160,7 +160,7 @@ class lineChart {
     }
 
     tooltipRender(d) {
-        let year = "Current Year: " + d.year;
+        let year = "Year: " + d.year;
         let freq = "Expected birds seen per hour: " + d.freq.toFixed(3);
         return [year, freq];
     }

@@ -9,16 +9,49 @@ class Map {
         this.selectedSpecies = selectedSpecies;
         this.speciesDict = speciesDict;
         this.lineChart = null;
-        this.selectedFrequencies = null;
+        //this.selectedFrequencies = null;
+        this.maxFrequency = 0;
         this.activeYear = 2012;
-        this.activeSeason = [new Date(this.activeYear, 0, 1), new Date(this.activeYear + 1, 0, 1)];
+        this.activeSeason = [new Date(2012, 0, 1), new Date(2012 + 1, 0, 1)];
         this.selectedData = speciesDict;
         this.width = 700;
         this.height = 650;
         this.projection = null;
         this.showTrend = false;
 
-        this.initializeMap();
+        this.projection = d3.geoAlbers()
+            .center([-10, 45])
+            .rotate([105, 0])
+            .parallels([35, 55])
+            .scale(400)
+            .translate([this.width / 2, this.height / 2]);
+
+        let path = d3.geoPath().projection(this.projection);
+
+        d3.json("data/north-america.json")
+            .then(json =>
+                {
+                    d3.select("#mapSvg").selectAll("path")
+                        .data(json.features)
+                        .enter()
+                        .append("path")
+                        .attr("d", path)
+                        .style("fill", "white")
+                        .style("stroke", "black")
+                        .style("stroke-width", "1");
+                    
+                        this.initializeMap();
+                        this.initializeSliders();
+                        this.updateMap(this.selectedSpecies);
+                }
+                    
+            )
+
+        
+        
+        
+
+        
     }
 
     setLineChart(chart) {
@@ -27,7 +60,7 @@ class Map {
 
     initializeMap() {
         let that = this;
-        console.log("initMap");
+        console.log("initMap", this.speciesDict);
 
         let svg = d3.select("#mapSvg")
             .attr("width", this.width)
@@ -45,65 +78,51 @@ class Map {
                 }
             }
         })
+    }
 
-        this.projection = d3.geoAlbers()
-            .center([-10, 45])
-            .rotate([105, 0])
-            .parallels([35, 55])
-            .scale(400)
-            .translate([that.width / 2, that.height / 2]);
+    initializeSliders() {
+        d3.select("#seasonDiv")
+            .append("svg")
+            .attr("width", this.width + 100)
+            .attr("height", 150).attr("id", "seasonSVG")
+            .attr("translate", "transform(0, " + this.height + ")");
 
-        let path = d3.geoPath().projection(that.projection);
+        d3.select('body')
+            .append('div').attr('id', 'activeYear-bar');
 
-        d3.json("data/north-america.json")
-            .then(function (json) {
-                {
-                    svg.selectAll("path")
-                        .data(json.features)
-                        .enter()
-                        .append("path")
-                        .attr("d", path)
-                        .style("fill", "white")
-                        .style("stroke", "black")
-                        .style("stroke-width", "1");
-                }
-            })
 
-        
         this.drawSeason();
         this.drawYearBar();
     }
 
-    updateMap(data) {
+    updateMap(selectedBirds) {
         let that = this;
-        this.selectedData = data;
-
-        let totalCount = 0;
-        let totalDur = 0;
-
-        that.selectedFrequencies = [];
-
-        for (let i = 0; i < that.selectedSpecies.length; i++) {
-            that.selectedFrequencies.push({ name: that.selectedSpecies[i], count: 0, obsDur: 0 });
+        this.selectedSpecies = selectedBirds;
+        this.selectedData = this.subsetByYear();
+        let max = 0
+        
+        for (var i = 0; i < this.selectedData.length; i++) {
+            if (this.selectedData[i].count != "X" || this.selectedData[i].obsDur != "") {
+                let tempFreq = +this.selectedData[i].count * 60 / +this.selectedData[i].obsDur;
+                if(max < tempFreq)
+                {
+                    max = tempFreq;
+                }
+            }
+        }
+        
+        let opacityScale = function(data)
+        {
+            let scale = d3.scaleLinear().domain([0, max]).range([.02, .15])
+            
+            let count = data.count == "X" ? 0: +data.count 
+            let obs = data.obsDur == "" ? 1: +data.obsDur
+            return scale(count * 60 / obs)
         }
 
-
-        let obsScale = function (d) {
-
-            let count = isNaN(parseInt(d.count)) ? 0 : parseInt(d.count);
-            let obsDur = isNaN(parseInt(d.obsDur)) ? 0 : parseInt(d.obsDur);
-
-            let index = that.selectedSpecies.indexOf(d.commonName);
-            that.selectedFrequencies[index].count += count;
-            that.selectedFrequencies[index].obsDur += obsDur;
-
-            let opac = count / obsDur;
-            return opac;
-        };
         let svg = d3.select("#mapSvg");
-
         svg.selectAll("circle")
-            .data(data)
+            .data(this.selectedData)
             .join("circle")
             .attr("cx", d => {
                 return that.projection([d.long, d.lat])[0];
@@ -112,17 +131,26 @@ class Map {
                 return that.projection([d.long, d.lat])[1];
             })
             .attr("r", 5)
-
             .style("fill", d => {
-                return that.getColorFromName(d.commonName);
-
+                if(d.birdCode == that.selectedSpecies[0])
+                {
+                    return "blue"
+                }
+                else if (d.birdCode == that.selectedSpecies[1])
+                {
+                    return "red"
+                }
+                else if (d.birdCode == that.selectedSpecies[2])
+                {
+                    return "green"
+                }
+                else
+                {
+                    return "black"
+                }
             })
-            .style("opacity", d => obsScale(d))
+            .style("opacity", d => opacityScale(d))
             .on("mouseover", d => console.log("Observation count:", d.count));
-
-        let totalFreq = totalCount / totalDur;
-
-        console.log("totalCount, totalDur", totalCount, totalDur, totalFreq);
 
     }
 
@@ -176,14 +204,14 @@ class Map {
         })
 
 
-        for (const bird in this.yearDict[2018]) {
-            if (that.yearDict[2018][bird].count == "X" || that.yearDict[2018][bird].obsDur == "") {
+        for (const bird in this.speciesDict) {
+            if (that.speciesDict[bird][2018].count == "X" || that.speciesDict[bird][2018].obsDur == "") {
                 continue;
             }
-            let freq = +that.yearDict[2018][bird].count * 60 / +that.yearDict[2018][bird].obsDur;
-            finalTrend[birdIndexDict[that.yearDict[2018][bird].commonName]].lat += freq * that.yearDict[2018][bird].lat
-            finalTrend[birdIndexDict[that.yearDict[2018][bird].commonName]].long += freq * that.yearDict[2018][bird].long
-            finalTrend[birdIndexDict[that.yearDict[2018][bird].commonName]].freq += freq
+            let freq = +that.speciesDict[bird][2018].count * 60 / +that.speciesDict[bird][2018].obsDur;
+            finalTrend[birdIndexDict[that.speciesDict[bird][2018].birdCode]].lat += freq * that.speciesDict[bird][2018].lat
+            finalTrend[birdIndexDict[that.speciesDict[bird][2018].birdCode]].long += freq * that.speciesDict[bird][2018].long
+            finalTrend[birdIndexDict[that.speciesDict[bird][2018].birdCode]].freq += freq
         }
         for (var record in finalTrend) {
             finalTrend[record].lat = finalTrend[record].lat / finalTrend[record].freq
@@ -199,9 +227,9 @@ class Map {
                 continue;
             }
             let freq = +that.selectedData[bird].count * 60 / +that.selectedData[bird].obsDur;
-            currentTrend[birdIndexDict[that.selectedData[bird].commonName]].lat += freq * that.selectedData[bird].lat
-            currentTrend[birdIndexDict[that.selectedData[bird].commonName]].long += freq * that.selectedData[bird].long
-            currentTrend[birdIndexDict[that.selectedData[bird].commonName]].freq += freq
+            currentTrend[birdIndexDict[that.selectedData[bird].birdCode]].lat += freq * that.selectedData[bird].lat
+            currentTrend[birdIndexDict[that.selectedData[bird].birdCode]].long += freq * that.selectedData[bird].long
+            currentTrend[birdIndexDict[that.selectedData[bird].birdCode]].freq += freq
         }
         for (var record in currentTrend) {
             currentTrend[record].lat = currentTrend[record].lat / currentTrend[record].freq
@@ -256,6 +284,18 @@ class Map {
         d3.select(".trendButton").text("Show Trend")
     }
 
+    subsetByYear()
+    {
+        let that = this;
+        let newData = []
+        for (var i = 0; i < that.selectedSpecies.length; i++) {
+            for (var j = 0; j < speciesDict[that.selectedSpecies[i]][that.activeYear].length; j++) {
+                newData.push(speciesDict[that.selectedSpecies[i]][that.activeYear][j])
+            }
+        }
+        return newData;
+    }
+
     /**
     * Draws the slider for the Year Bar
     */
@@ -288,8 +328,7 @@ class Map {
             //YOUR CODE HERE
             that.activeYear = this.value;
             d3.select("#activeYear-bar").select(".slider-wrap").select(".slider-label").select("text").attr("x", yearScale(that.activeYear)).text(that.activeYear)
-            //that.updatePlot(that.activeYear, xdrop, ydrop, cdrop);
-
+            that.updateMap(that.selectedSpecies);
 
         });
     }
@@ -366,26 +405,26 @@ class Map {
                 if (selection == null) {
                     //Check how much was brushed.
                     that.activeSeason = [new Date(that.activeYear, 0, 1), new Date(that.activeYear, 11, 31)]
-                    that.selectedData = that.yearDict[that.activeYear]
+                    //that.selectedData = that.speciesDict[][that.activeYear]
                 }
                 else {
                     that.activeSeason = [seasonScale.invert(left), seasonScale.invert(right)]
                     console.log("active season", that.activeSeason);
                     //Here we subset the data set using the new season.
-                    that.selectedData = that.yearDict[that.activeYear].filter(d => {
-                        if (new Date(d.date) <= that.activeSeason[1] && new Date(d.date) >= that.activeSeason[0]) {
-                            return true
-                        } else {
-                            return false
-                        }
-                    })
+                    // that.selectedData = that.speciesDict[that.activeYear].filter(d => {
+                    //     if (new Date(d.date) <= that.activeSeason[1] && new Date(d.date) >= that.activeSeason[0]) {
+                    //         return true
+                    //     } else {
+                    //         return false
+                    //     }
+                    // })
                 }
             })
             .on("end", () => {
                 //console.log("Brushing Complete", d3.event.selection)
                 if (d3.event.selection == null) {
                     that.activeSeason = [new Date(that.activeYear, 0, 1), new Date(that.activeYear, 11, 31)]
-                    that.selectedData = that.yearDict[that.activeYear]
+                    //that.selectedData = that.speciesDict[that.activeYear]
                 }
                 else {
                     const [left, right] = d3.event.selection;
@@ -393,13 +432,13 @@ class Map {
 
                     //console.log("active season", that.activeSeason);
                     //Here we subset the data set using the new season.
-                    that.selectedData = that.yearDict[that.activeYear].filter(d => {
-                        if (new Date(d.date) <= that.activeSeason[1] && new Date(d.date) >= that.activeSeason[0]) {
-                            return true
-                        } else {
-                            return false
-                        }
-                    })
+                    // that.selectedData = that.speciesDict[that.activeYear].filter(d => {
+                    //     if (new Date(d.date) <= that.activeSeason[1] && new Date(d.date) >= that.activeSeason[0]) {
+                    //         return true
+                    //     } else {
+                    //         return false
+                    //     }
+                    // })
 
                     // console.log(that.activeYear);
                     // console.log("new data: ", that.selectedData)
