@@ -169,6 +169,28 @@ div.lineChartTooltip {
     font: 14px sans-serif;
 }
 
+/*tooltip */
+div.mapTooltip {
+    position: absolute;
+    text-align: center;
+    min-width: 60px;
+    padding: 2px;
+    background: white;
+    stroke: gray;
+    border-radius: 8px;
+    pointer-events: none;
+    border: 2px solid black;
+}
+
+.mapTooltip h1 {
+    margin: auto;
+    font: 18px sans-serif;
+}
+.mapTooltip h2 {
+    margin: auto;
+    font: 14px sans-serif;
+}
+
 .active input{
     box-shadow: none;
 }

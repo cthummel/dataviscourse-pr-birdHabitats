@@ -1,12 +1,16 @@
 
 let that = this;
 let fileMap = {
-    "yebsap": {file: "data/yebsap50k.json",color: "blue"},
-    "rufhum": {file: "data/rufhum50k.json", color: "red"},
+    "yebsap": {file: "data/yebsap.json", color: "blue"},
+    "rufhum": {file: "data/rufhum.json", color: "red"},
     "henspa": {file: "data/henspa.json", color: "green"},
     "killde": {file: "data/killde.json", color: "green"},
     "moublu": {file: "data/moublu.json", color: "green"},
     "baleag": {file: "data/baleag.json", color: "green"},
+    //"sancra": {file: "data/sancra.json", color: "green"},
+    "coohaw": {file: "data/coohaw.json", color: "green"},
+    "amekes": {file: "data/amekes.json", color: "green"},
+    "wooduc": {file: "data/wooduc.json", color: "green"},
 }
 
 let allSpecies = [
@@ -16,6 +20,10 @@ let allSpecies = [
     "killde",
     "moublu",
     "baleag",
+    //"sancra",
+    "coohaw",
+    "amekes",
+    "wooduc",
 ]
 
 let nameDict = 
@@ -26,6 +34,10 @@ let nameDict =
     "killde": "Killdeer",
     "moublu": "Mountain Bluebird",
     "baleag": "Bald Eagle",
+    //"sancra": "Sandhill Crane",
+    "coohaw": "Cooper's Hawk",
+    "amekes": "American Kestrel",
+    "wooduc": "Wood Duck",
 }
 
 
@@ -62,13 +74,21 @@ d3.select("#birdButtonArray").selectAll("label").data(allSpecies).join("label")
     .attr("for", d=> d + "Button")
     .append("input")
     .attr("type", "button")
-    .attr("name", d => d + "Button")
+    .attr("id", d => d + "Button")
     .attr("value", d => nameDict[d])
     .on("click", d => {
-        console.log("You just clicked a button", d3.event, d3.select("#" + d + "Label"))
-        console.log(birdButtonQueue.items)
-        d3.select("#" + d + "Label").classed("active") ? d3.select("#" + d + "Label").attr("class", "btn btn-primary active"): d3.select("#" + d + "Label").attr("class", "btn btn-secondary")
-
+        console.log("You just clicked a button", d3.event.srcElement.checked, "#" + d + "Label")
+        //d3.select("#" + d + "Label").classed("active") ? d3.select("#" + d + "Label").attr("class", "btn btn-primary active"): d3.select("#" + d + "Label").attr("class", "btn btn-secondary")
+        // for(var i = 0; i < allSpecies.length; i++)
+        // {
+        //     d3.select("#" + allSpecies[i] + "Label").classed("btn-primary", false)
+        //     d3.select("#" + allSpecies[i] + "Label").classed("btn-secondary", true)
+        // }
+        // for(var i = 0; i < birdButtonQueue.items.length; i++)
+        // {
+        //     d3.select("#" + birdButtonQueue.items[i] + "Label").classed("btn-secondary", false)
+        //     d3.select("#" + birdButtonQueue.items[i] + "Label").classed("btn-primary", true)
+        // }
         if(d3.event.srcElement.checked)
         {
             birdButtonQueue.removeBird(d);
@@ -81,9 +101,24 @@ d3.select("#birdButtonArray").selectAll("label").data(allSpecies).join("label")
             }
             else
             {
-                birdButtonQueue.dequeue();
+                let removedBird = birdButtonQueue.dequeue();
+                d3.select("#" + removedBird + "Label").classed("btn-primary", false)
+                d3.select("#" + removedBird + "Label").classed("btn-secondary", true)
+                d3.select("#" + removedBird + "Button").property("checked", false)
+
                 birdButtonQueue.enqueue(d);
             }
+        }
+        console.log(birdButtonQueue.items)
+        if (d3.select("#" + d + "Label").classed("btn-primary"))
+        {
+            d3.select("#" + d + "Label").classed("btn-primary", false)
+            d3.select("#" + d + "Label").classed("btn-secondary", true)
+        }
+        else
+        {
+            d3.select("#" + d + "Label").classed("btn-secondary", false)
+            d3.select("#" + d + "Label").classed("btn-primary", true)
         }
 
         //Update displays with newly selected birds.
@@ -91,6 +126,8 @@ d3.select("#birdButtonArray").selectAll("label").data(allSpecies).join("label")
         that.chart.updateSelectedSpecies(birdButtonQueue.items);
     })
 
+d3.select("#henspaButton").property("checked", true)
+//console.log("We set henspa to", d3.select("#henspaButton").property("checked"))
 
 
 let promises = [];
@@ -115,8 +152,8 @@ Promise.all(promises).then(values => {
     //self.initSelectedData();
     //let map = new Map(["Henslow's Sparrow"], speciesDict);
     //let chart = new lineChart(["Henslow's Sparrow"], speciesDict);
-    this.map = new Map(birdButtonQueue.items, speciesDict);
-    this.chart = new lineChart(allSpecies, speciesDict);
+    this.map = new Map(birdButtonQueue.items, speciesDict, nameDict);
+    this.chart = new lineChart(allSpecies, speciesDict, nameDict);
     map.setLineChart(lineChart);
     chart.setMap(map);
 })

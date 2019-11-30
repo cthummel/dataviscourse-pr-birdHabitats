@@ -5,9 +5,10 @@ class Map {
      * @param selectedSpecies refers to initial selected bird species.
      * @param speciesDict contains the data for all birds.
      */
-    constructor(selectedSpecies, speciesDict) {
+    constructor(selectedSpecies, speciesDict, nameDict) {
         this.selectedSpecies = selectedSpecies;
         this.speciesDict = speciesDict;
+        this.nameDict = nameDict;
         this.lineChart = null;
         //this.selectedFrequencies = null;
         this.maxFrequency = 0;
@@ -62,6 +63,11 @@ class Map {
         let that = this;
         console.log("initMap", this.speciesDict);
 
+        d3.select('#Map')
+            .append('div')
+            .attr("class", "mapTooltip")
+            .style("opacity", 0);
+        
         let svg = d3.select("#mapSvg")
             .attr("width", this.width)
             .attr("height", this.height);
@@ -149,7 +155,17 @@ class Map {
                 }
             })
             .style("opacity", d => opacityScale(d))
-            .on("mouseover", d => console.log("Observation count:", d.count));
+            .on("mouseover", d => {
+                //console.log("mousedover", d)
+                let name = [that.nameDict[d.birdCode]];
+                let output = this.tooltipRender(d);
+                let tool = d3.select(".mapTooltip").style("left", d3.event.pageX + 15 + "px")
+                                                .style("top", d3.event.pageY + 15 + "px")
+                                                .style("opacity", 1)
+                tool.selectAll("h1").data(name).join("h1").text(d => d)
+                tool.selectAll("h2").data(output).join("h2").text(d => d)
+            })
+            .on("mouseout", () => d3.select(".mapTooltip").style("opacity", 0))
 
         if(this.showTrend)
         {
@@ -477,6 +493,23 @@ class Map {
             .attr("height", 30)
             .attr("x", d => seasonScale(d.start))
             .attr("class", d => d.type)
+    }
+
+    tooltipRender(d) {
+        let location = "County: " + d.countyID;
+        let tempCount = +d.count;
+        let tempDur = +d.obsDur;
+        if(d.count == "X")
+        {
+            tempCount = 0;
+        } 
+        if(d.obsDur == "")
+        {
+            tempDur = 300;
+        }
+        let freq = tempCount * 60 / tempDur;
+        let freqText = "Expected birds seen per hour: " + freq.toFixed(3);
+        return [location, freqText];
     }
 
 }

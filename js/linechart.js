@@ -1,8 +1,9 @@
 class lineChart {
 
-    constructor(selectedSpecies, speciesDict) {
+    constructor(selectedSpecies, speciesDict, nameDict) {
         this.selectedSpecies = selectedSpecies;
         this.speciesDict = speciesDict;
+        this.nameDict = nameDict
         this.map = null
         this.freqDict = [];
         this.circleData = [];
@@ -15,15 +16,6 @@ class lineChart {
         this.width = 725 - this.margin.left - this.margin.right;
         this.height = 675 - this.margin.top - this.margin.bottom;
 
-        this.nameDict =
-        {
-            "yebsap": "Yellow-bellied Sapsucker",
-            "rufhum": "Rufous Hummingbird",
-            "henspa": "Henslow's Sparrow",
-            "killde": "Killdeer",
-            "moublu": "Mountain Bluebird",
-            "baleag": "Bald Eagle",
-        }
 
         d3.select("#lineChart").append("svg")
             .attr("width", this.width + this.margin.left + this.margin.right)
