@@ -3,20 +3,29 @@ let that = this;
 let fileMap = {
     "yebsap": {file: "data/yebsap50k.json",color: "blue"},
     "rufhum": {file: "data/rufhum50k.json", color: "red"},
-    "henspa": {file: "data/henspa.json", color: "green"}
+    "henspa": {file: "data/henspa.json", color: "green"},
+    "killde": {file: "data/killde.json", color: "green"},
+    "moublu": {file: "data/moublu.json", color: "green"},
+    "baleag": {file: "data/baleag.json", color: "green"},
 }
 
 let allSpecies = [
     "yebsap", 
     "rufhum", 
-    "henspa"
+    "henspa",
+    "killde",
+    "moublu",
+    "baleag",
 ]
 
 let nameDict = 
 {
     "yebsap": "Yellow-bellied Sapsucker", 
     "rufhum": "Rufous Hummingbird", 
-    "henspa": "Henslow's Sparrow"
+    "henspa": "Henslow's Sparrow",
+    "killde": "Killdeer",
+    "moublu": "Mountain Bluebird",
+    "baleag": "Bald Eagle",
 }
 
 
@@ -79,7 +88,7 @@ d3.select("#birdButtonArray").selectAll("label").data(allSpecies).join("label")
 
         //Update displays with newly selected birds.
         that.map.updateMap(birdButtonQueue.items);
-        //that.chart.updateSelectedSpecies(birdButtonQueue.items);
+        that.chart.updateSelectedSpecies(birdButtonQueue.items);
     })
 
 

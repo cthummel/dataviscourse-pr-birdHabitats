@@ -11,9 +11,19 @@ class lineChart {
         this.activeSeason = [new Date(2010, 0, 1), new Date(2011, 0, 1)];
         this.lineChartXScale = null;
         this.lineChartYScale = null;
-        this.margin = { top: 20, right: 20, bottom: 20, left: 40 };
-        this.width = 700 - this.margin.left - this.margin.right;
-        this.height = 650 - this.margin.top - this.margin.bottom;
+        this.margin = { top: 20, right: 20, bottom: 50, left: 50 };
+        this.width = 725 - this.margin.left - this.margin.right;
+        this.height = 675 - this.margin.top - this.margin.bottom;
+
+        this.nameDict =
+        {
+            "yebsap": "Yellow-bellied Sapsucker",
+            "rufhum": "Rufous Hummingbird",
+            "henspa": "Henslow's Sparrow",
+            "killde": "Killdeer",
+            "moublu": "Mountain Bluebird",
+            "baleag": "Bald Eagle",
+        }
 
         d3.select("#lineChart").append("svg")
             .attr("width", this.width + this.margin.left + this.margin.right)
@@ -25,6 +35,7 @@ class lineChart {
         //this.updateFreqDict();
         this.initLineChart()
         this.updateLineChart(speciesDict)
+        this.updateSelectedSpecies([this.selectedSpecies[2]])
     }
 
 
@@ -43,11 +54,27 @@ class lineChart {
             .attr("class", "lineChartXAxis")
             .call(lineChartXAxis)
 
+        d3.select("#lineChartSvg").append("text")             
+            .attr("transform",
+                  "translate(" + (this.width/2) + " ," + 
+                                 (this.height + this.margin.top + 20) + ")")
+            .style("text-anchor", "middle")
+            .style("stroke", "black")
+            .text("Year");
+
         this.lineChartYScale = d3.scaleLinear().domain([0, that.freqMax]).range([this.height, 0]);
         let lineChartYAxis = d3.axisLeft().scale(this.lineChartYScale)
         d3.select("#lineChartSvg").append("g")
             .attr("class", "lineChartYAxis")
             .call(lineChartYAxis)
+
+        d3.select("#lineChartSvg").append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 0 - this.margin.left - 5)
+            .attr("x", 0 - (this.height / 2))
+            .attr("dy", "1em")
+            .style("text-anchor", "middle")
+            .text("Frequency (birds/hour)"); 
 
     }
 
@@ -83,7 +110,7 @@ class lineChart {
             .attr("class", d => "lineChartLine " + d.birdCode)
             .attr("d", d => lineGenerator(d.data))
             .style("fill", "none")
-            .style("stroke", "black")
+
 
         //Generate circles for the year data 
         d3.select("#lineChartSvg").selectAll(".lineChartCircle").data(that.circleData).join("circle")
@@ -92,7 +119,7 @@ class lineChart {
             .attr("cy", d => that.lineChartYScale(d.freq))
             .attr("r", 5)
             .on("mouseover", d => {
-                let name = [d.birdCode]
+                let name = [that.nameDict[d.birdCode]];
                 let output = this.tooltipRender(d);
                 let tool = d3.select(".lineChartTooltip").style("left", d3.event.pageX + 15 + "px")
                                                 .style("top", d3.event.pageY + 15 + "px")
@@ -101,8 +128,48 @@ class lineChart {
                 tool.selectAll("h2").data(output).join("h2").text(d => d)
             })
             .on("mouseout", () => d3.select(".lineChartTooltip").style("opacity", 0))
-            .on("click", d => d3.selectAll("lineChartLine " + d.birdCode).classed("selected", true))
+            .on("click", d => that.map.setYear(d.year))
+            //.on("click", d => d3.selectAll("lineChartLine " + d.birdCode).classed("selected", true))
 
+    }
+
+    /**
+     * Update which lines are highlighted.
+     * @param selectedSpecies 
+     */
+    updateSelectedSpecies(selectedSpecies)
+    {
+        d3.select("#lineChartSvg").selectAll(".lineChartLine").classed("selectedBird0", false)
+        d3.select("#lineChartSvg").selectAll(".lineChartLine").classed("selectedBird1", false)
+        d3.select("#lineChartSvg").selectAll(".lineChartLine").classed("selectedBird2", false)
+        d3.select("#lineChartSvg").selectAll(".lineChartCircle").classed("selectedBird0", false)
+        d3.select("#lineChartSvg").selectAll(".lineChartCircle").classed("selectedBird1", false)
+        d3.select("#lineChartSvg").selectAll(".lineChartCircle").classed("selectedBird2", false)
+        d3.select("#lineChartSvg").selectAll(".lineChartCircle").attr("class", d => {
+            let tempClass = "lineChartCircle " + d.birdCode + " ";
+            for(var i = 0; i < selectedSpecies.length; i++)
+            {
+                if(d.birdCode == selectedSpecies[i])
+                {
+                    tempClass = tempClass + "selectedBird" + i;
+                }
+            }
+            return tempClass
+        })
+
+        d3.select("#lineChartSvg").selectAll(".lineChartLine").attr("class", d => {
+            let tempClass = "lineChartLine " + d.birdCode + " ";
+            for(var i = 0; i < selectedSpecies.length; i++)
+            {
+                if(d.birdCode == selectedSpecies[i])
+                {
+                    tempClass = tempClass + "selectedBird" + i;
+                }
+            }
+            return tempClass
+        })
+        
+        
     }
 
     /**

@@ -32,6 +32,47 @@
     margin-left: 50px;
 }
 
+/* Linechart styling */
+.lineChartCircle
+{
+    fill:black;
+    stroke:white;
+}
+.lineChartCircle:hover
+{
+    stroke: black;
+    stroke-width: 10px;
+}
+.lineChartCircle.selectedBird0 {
+    fill: blue;
+    stroke: black;
+}
+.lineChartCircle.selectedBird1 {
+    fill: red;
+    stroke: black;
+}
+.lineChartCircle.selectedBird2 {
+    fill: green;
+    stroke: black;
+}
+.lineChartLine
+{
+    stroke: black
+}
+.lineChartLine:hover
+{
+    stroke-width: 10px
+}
+.lineChartLine.selectedBird0 {
+    stroke: blue;
+}
+.lineChartLine.selectedBird1 {
+    stroke: red;
+}
+.lineChartLine.selectedBird2 {
+    stroke: green;
+}
+
 .slider {
     -webkit-appearance: none;
     width: 725px;
@@ -68,7 +109,7 @@
 }
 
 .slider-label svg {
-    width: 750px;
+    width: 725px;
     height: 35px;
 }
 

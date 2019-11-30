@@ -67,8 +67,8 @@ class Map {
             .attr("height", this.height);
 
         d3.select(".trendButton").on("click", function () {
-            if (this.showTrend) {
-                this.hideTrend()
+            if (that.showTrend) {
+                that.hideTrend()
                 that.showTrend = false;
             }
             else {
@@ -114,9 +114,8 @@ class Map {
         let opacityScale = function(data)
         {
             let scale = d3.scaleLinear().domain([0, max]).range([.02, .15])
-            
             let count = data.count == "X" ? 0: +data.count 
-            let obs = data.obsDur == "" ? 1: +data.obsDur
+            let obs = data.obsDur == "" ? 300: +data.obsDur
             return scale(count * 60 / obs)
         }
 
@@ -152,23 +151,22 @@ class Map {
             .style("opacity", d => opacityScale(d))
             .on("mouseover", d => console.log("Observation count:", d.count));
 
+        if(this.showTrend)
+        {
+            this.displayTrend();
+        }
+
     }
 
     displayTrend() {
         let that = this;
         let combinedFreqList = []
         let birdIndexDict = {}
+        console.log("Trying to show trend")
         for (var i = 0; i < this.selectedSpecies.length; i++) {
             birdIndexDict[that.selectedSpecies[i]] = i;
         }
-        console.log("birdDict", birdIndexDict, birdIndexDict["Yellow-bellied Sapsucker"])
-
-        let mercProj = d3.geoAlbers()
-            .center([-10, 45])
-            .rotate([105, 0])
-            .parallels([35, 55])
-            .scale(400)
-            .translate([that.width / 2, that.height / 2]);
+        //console.log("birdDict", birdIndexDict, birdIndexDict["Yellow-bellied Sapsucker"])
 
         let circleSizer = function (d) {
             let cScale = d3.scaleSqrt().range([5, 20]).domain([cMin, cMax]);
@@ -203,40 +201,54 @@ class Map {
             }
         })
 
+        //console.log("SpeciesDict in Trend", this.speciesDict)
+        for (const index in this.selectedSpecies) {
+            let bird = this.selectedSpecies[index]
+            //console.log(that.speciesDict[bird][2018])
 
-        for (const bird in this.speciesDict) {
-            if (that.speciesDict[bird][2018].count == "X" || that.speciesDict[bird][2018].obsDur == "") {
-                continue;
+            for(var j = 0; j < that.speciesDict[bird][2018].length; j++)
+            {
+                if (that.speciesDict[bird][2018][j].count == "X" || that.speciesDict[bird][2018][j].obsDur == "") {
+                    continue;
+                }
+                let freq = +that.speciesDict[bird][2018][j].count * 60 / +that.speciesDict[bird][2018][j].obsDur;
+                finalTrend[birdIndexDict[bird]].lat += freq * that.speciesDict[bird][2018][j].lat
+                finalTrend[birdIndexDict[bird]].long += freq * that.speciesDict[bird][2018][j].long
+                finalTrend[birdIndexDict[bird]].freq += freq
             }
-            let freq = +that.speciesDict[bird][2018].count * 60 / +that.speciesDict[bird][2018].obsDur;
-            finalTrend[birdIndexDict[that.speciesDict[bird][2018].birdCode]].lat += freq * that.speciesDict[bird][2018].lat
-            finalTrend[birdIndexDict[that.speciesDict[bird][2018].birdCode]].long += freq * that.speciesDict[bird][2018].long
-            finalTrend[birdIndexDict[that.speciesDict[bird][2018].birdCode]].freq += freq
         }
+        //console.log("combinedTrend", combinedTrend)
         for (var record in finalTrend) {
+            //console.log(record, combinedTrend[record])
             finalTrend[record].lat = finalTrend[record].lat / finalTrend[record].freq
             finalTrend[record].long = finalTrend[record].long / finalTrend[record].freq
-            combinedTrend[birdIndexDict[finalTrend[record].name]].finalYearLat = finalTrend[record].lat
-            combinedTrend[birdIndexDict[finalTrend[record].name]].finalYearLong = finalTrend[record].long
-            combinedTrend[birdIndexDict[finalTrend[record].name]].finalYearFreq = finalTrend[record].freq
+            combinedTrend[record].finalYearLat = finalTrend[record].lat
+            combinedTrend[record].finalYearLong = finalTrend[record].long
+            combinedTrend[record].finalYearFreq = finalTrend[record].freq
             combinedFreqList.push(finalTrend[record].freq)
         }
 
-        for (const bird in this.selectedData) {
-            if (that.selectedData[bird].count == "X" || that.selectedData[bird].obsDur == "") {
-                continue;
+        for (const index in this.selectedSpecies) {
+            let bird = this.selectedSpecies[index]
+            //console.log(that.speciesDict[bird][this.activeYear])
+
+            for(var j = 0; j < that.speciesDict[bird][this.activeYear].length; j++)
+            {
+                if (that.speciesDict[bird][this.activeYear][j].count == "X" || that.speciesDict[bird][this.activeYear][j].obsDur == "") {
+                    continue;
+                }
+                let freq = +that.speciesDict[bird][this.activeYear][j].count * 60 / +that.speciesDict[bird][this.activeYear][j].obsDur;
+                currentTrend[birdIndexDict[bird]].lat += freq * that.speciesDict[bird][this.activeYear][j].lat
+                currentTrend[birdIndexDict[bird]].long += freq * that.speciesDict[bird][this.activeYear][j].long
+                currentTrend[birdIndexDict[bird]].freq += freq
             }
-            let freq = +that.selectedData[bird].count * 60 / +that.selectedData[bird].obsDur;
-            currentTrend[birdIndexDict[that.selectedData[bird].birdCode]].lat += freq * that.selectedData[bird].lat
-            currentTrend[birdIndexDict[that.selectedData[bird].birdCode]].long += freq * that.selectedData[bird].long
-            currentTrend[birdIndexDict[that.selectedData[bird].birdCode]].freq += freq
         }
         for (var record in currentTrend) {
             currentTrend[record].lat = currentTrend[record].lat / currentTrend[record].freq
             currentTrend[record].long = currentTrend[record].long / currentTrend[record].freq
-            combinedTrend[birdIndexDict[currentTrend[record].name]].currentYearLat = currentTrend[record].lat
-            combinedTrend[birdIndexDict[currentTrend[record].name]].currentYearLong = currentTrend[record].long
-            combinedTrend[birdIndexDict[currentTrend[record].name]].currentYearFreq = currentTrend[record].freq
+            combinedTrend[record].currentYearLat = currentTrend[record].lat
+            combinedTrend[record].currentYearLong = currentTrend[record].long
+            combinedTrend[record].currentYearFreq = currentTrend[record].freq
             combinedFreqList.push(currentTrend[record].freq)
         }
 
@@ -261,6 +273,7 @@ class Map {
             .attr("r", d => circleSizer(d.freq))
             .style("fill", "green")
             .style("stroke", "black")
+            .style("opacity", .8)
         //.title(d => d.freq)
 
         d3.select("#mapSvg").selectAll(".trendEndCircle").data(finalTrend).join("circle")
@@ -270,6 +283,7 @@ class Map {
             .attr("r", d => circleSizer(d.freq))
             .style("fill", "green")
             .style("stroke", "black")
+            .style("opacity", .8)
         //.title(d => d.freq)
 
         //Swap the display on the button
@@ -303,9 +317,9 @@ class Map {
         let that = this;
 
         //Slider to change the activeYear of the data
-        let yearScale = d3.scaleLinear().domain([2010, 2018]).range([30, 700]);
+        this.yearScale = d3.scaleLinear().domain([2010, 2018]).range([30, 700]);
 
-        let yearSlider = d3.select('#activeYear-bar')
+        this.yearSlider = d3.select('#activeYear-bar')
             .append('div').classed('slider-wrap', true)
             .append('input').classed('slider', true)
             .attr('type', 'range')
@@ -316,21 +330,30 @@ class Map {
         let sliderLabel = d3.select('.slider-wrap')
             .append('div').classed('slider-label', true)
             .append('svg')
-            .attr("width", this.width - 100)
+            .attr("width", this.width)
             .attr("height", this.height);
 
         let sliderText = sliderLabel.append('text').text(this.activeYear);
 
-        sliderText.attr('x', yearScale(this.activeYear));
+        sliderText.attr('x', that.yearScale(this.activeYear));
         sliderText.attr('y', 25);
 
-        yearSlider.on('input', function () {
+        this.yearSlider.on('input', function () {
             //YOUR CODE HERE
             that.activeYear = this.value;
-            d3.select("#activeYear-bar").select(".slider-wrap").select(".slider-label").select("text").attr("x", yearScale(that.activeYear)).text(that.activeYear)
+            d3.select("#activeYear-bar").select(".slider-wrap").select(".slider-label").select("text").attr("x", that.yearScale(that.activeYear) - 0).text(that.activeYear)
             that.updateMap(that.selectedSpecies);
 
         });
+    }
+
+    setYear(year)
+    {
+        let that = this;
+        this.activeYear = year;
+        d3.select(".slider").attr("value", year)
+        d3.select("#activeYear-bar").select(".slider-wrap").select(".slider-label").select("text").attr("x", that.yearScale(that.activeYear)).text(that.activeYear)
+        that.updateMap(that.selectedSpecies);
     }
 
     drawSeason() {
@@ -364,13 +387,13 @@ class Map {
             .join("rect")
             .attr("width", 40)
             .attr("height", 20)
-            .attr("x", (d, i) => i * 100)
+            .attr("x", (d, i) => i * 125)
             .attr("class", d => d.type)
             .on("click", d => d3.select(".brushGroup").call(brush.move, [seasonScale(d.start), seasonScale(d.end)]));
         seasonRectGroup.selectAll("text")
             .data(tempData)
             .join("text")
-            .attr("x", (d, i) => i * 100)
+            .attr("x", (d, i) => i * 125)
             .attr("y", 45)
             .style("font-weight", "bold")
             .text(d => d.type)
@@ -402,47 +425,23 @@ class Map {
                 //console.log("Brushing")
                 const selection = d3.event.selection;
                 const [left, right] = selection;
-                if (selection == null) {
-                    //Check how much was brushed.
-                    that.activeSeason = [new Date(that.activeYear, 0, 1), new Date(that.activeYear, 11, 31)]
-                    //that.selectedData = that.speciesDict[][that.activeYear]
-                }
-                else {
+                if (selection != null) {
+                    //Check how much was brushed
                     that.activeSeason = [seasonScale.invert(left), seasonScale.invert(right)]
                     console.log("active season", that.activeSeason);
-                    //Here we subset the data set using the new season.
-                    // that.selectedData = that.speciesDict[that.activeYear].filter(d => {
-                    //     if (new Date(d.date) <= that.activeSeason[1] && new Date(d.date) >= that.activeSeason[0]) {
-                    //         return true
-                    //     } else {
-                    //         return false
-                    //     }
-                    // })
+                    //that.selectedData = that.speciesDict[][that.activeYear]
                 }
+                
             })
             .on("end", () => {
                 //console.log("Brushing Complete", d3.event.selection)
                 if (d3.event.selection == null) {
-                    that.activeSeason = [new Date(that.activeYear, 0, 1), new Date(that.activeYear, 11, 31)]
+                    that.activeSeason = [new Date(that.activeYear, 0, 1), new Date(that.activeYear + 1, 0, 1)]
                     //that.selectedData = that.speciesDict[that.activeYear]
                 }
                 else {
                     const [left, right] = d3.event.selection;
                     that.activeSeason = [seasonScale.invert(left), seasonScale.invert(right)]
-
-                    //console.log("active season", that.activeSeason);
-                    //Here we subset the data set using the new season.
-                    // that.selectedData = that.speciesDict[that.activeYear].filter(d => {
-                    //     if (new Date(d.date) <= that.activeSeason[1] && new Date(d.date) >= that.activeSeason[0]) {
-                    //         return true
-                    //     } else {
-                    //         return false
-                    //     }
-                    // })
-
-                    // console.log(that.activeYear);
-                    // console.log("new data: ", that.selectedData)
-                    // console.log("new season: ", that.activeSeason)
                 }
 
             })

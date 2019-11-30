@@ -48,17 +48,11 @@
 
 
       <br>
+      <div>
+        <button class="trendButton">Show Trend</button>
+      </div>
       <div id="mainDisplay">
           <div id="Map">
-              <button class="trendButton">Show Trend</button>
-              <div id="speciesObservationalFreqs">
-                  <ul>
-                      <li v-for="f in selectedFrequencies">
-                          Total Observation Frequency for {{f.name}}: {{ (f.count * 60 /f.obsDur).toFixed(3) }} (birds/hour)
-                      </li>
-                  </ul>
-      
-              </div>
               <svg id="mapSvg">
       
       
