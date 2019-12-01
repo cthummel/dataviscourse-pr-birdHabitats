@@ -1,31 +1,77 @@
-view
-{
-    background-color: rgb(0,0,0);
+#app{
+    width: 100%;
+    height: 100%;
 }
 
-#seasonDiv
-{
-    margin-left: 70px;
+
+#header-wrap{
+    margin: 10px;
 }
 
-.year-round
-{
-    fill: purple;
+#mainDisplay{
+    display: flex;
 }
-.breeding
+
+.year-round {
+    fill: lightgreen;
+}
+
+.breeding {
+    fill: aqua;
+}
+
+.pre-migration {
+    fill: coral;
+}
+
+.post-migration {
+    fill: hotpink;
+}
+
+#seasonDiv {
+    margin-left: 50px;
+}
+
+/* Linechart styling */
+.lineChartCircle
 {
+    fill:black;
+    stroke:white;
+}
+.lineChartCircle:hover
+{
+    stroke: black;
+    stroke-width: 10px;
+}
+.lineChartCircle.selectedBird0 {
+    fill: blue;
+    stroke: black;
+}
+.lineChartCircle.selectedBird1 {
     fill: red;
+    stroke: black;
 }
-.pre-migration
+.lineChartCircle.selectedBird2 {
+    fill: green;
+    stroke: black;
+}
+.lineChartLine
 {
-    fill: yellow;
+    stroke: black
 }
-.post-migration
+.lineChartLine:hover
 {
-    fill:orange;
+    stroke-width: 10px
 }
-
-
+.lineChartLine.selectedBird0 {
+    stroke: blue;
+}
+.lineChartLine.selectedBird1 {
+    stroke: red;
+}
+.lineChartLine.selectedBird2 {
+    stroke: green;
+}
 
 .slider {
     -webkit-appearance: none;
@@ -63,7 +109,7 @@ view
 }
 
 .slider-label svg {
-    width: 750px;
+    width: 725px;
     height: 35px;
 }
 
@@ -76,4 +122,75 @@ view
     float: left;
     width: 750px;
     margin-left: 50px;
+}
+.trendButton {
+    background: white;
+    border: 2px solid rgb(16, 126, 252);
+    border-radius: 6px;
+    color: rgb(16, 126, 252);
+    padding: 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    width: 150px;
+}
+.trendButton:hover {
+    background: rgb(16, 126, 252);
+    color: white;
+}
+#lineChart{
+    overflow: hidden;
+}
+.line:hover{
+    stroke-width: 10px
+}
+
+/*tooltip */
+div.lineChartTooltip {
+    position: absolute;
+    text-align: center;
+    min-width: 60px;
+    padding: 2px;
+    background: white;
+    stroke: gray;
+    border-radius: 8px;
+    pointer-events: none;
+    border: 2px solid black;
+}
+
+.lineChartTooltip h1 {
+    margin: auto;
+    font: 18px sans-serif;
+}
+.lineChartTooltip h2 {
+    margin: auto;
+    font: 14px sans-serif;
+}
+
+/*tooltip */
+div.mapTooltip {
+    position: absolute;
+    text-align: center;
+    min-width: 60px;
+    padding: 2px;
+    background: white;
+    stroke: gray;
+    border-radius: 8px;
+    pointer-events: none;
+    border: 2px solid black;
+}
+
+.mapTooltip h1 {
+    margin: auto;
+    font: 18px sans-serif;
+}
+.mapTooltip h2 {
+    margin: auto;
+    font: 14px sans-serif;
+}
+
+.focus input{
+    box-shadow: none;
 }

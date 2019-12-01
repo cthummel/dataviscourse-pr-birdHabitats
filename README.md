@@ -1,5 +1,11 @@
-## Note: current working branch and release is for vuerefactor.  Please refer to that branchs readme for instructions!
+###Data Vizualization Final Project:
+ ####Avian habitat and population loss interactice web app
+ 
+ ```Will Richards, Corin Thummel```
 
-Data Vizualization: Avian habitat and population loss interactice web app
 
-Will Richards, Corin Thummel
+
+
+## Run project
+
+```python3 -m http.server 8080```

@@ -1,26 +1,88 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <title>Project - Changes in Bird Populations in North America </title>
-    <link rel="stylesheet" href="styles.css"/>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Bird Habitat Project</title>
     <script src="https://d3js.org/d3.v5.js"></script>
-    <script src="https://d3js.org/topojson.v2.min.js"></script>
-    <script src="https://d3js.org/d3-geo-projection.v2.js"></script>
-    <script src="dist/geotiff.bundle.js"></script>
+    <script src="https://d3js.org/d3-array.v2.min.js"></script>
+    <script src="https://d3js.org/d3-force.v2.min.js"></script>
+    <script src="https://d3js.org/d3-color.v1.min.js"></script>
+    <script src="https://d3js.org/d3-dispatch.v1.min.js"></script>
+    <script src="https://d3js.org/d3-ease.v1.min.js"></script>
+    <script src="https://d3js.org/d3-interpolate.v1.min.js"></script>
+    <script src="https://d3js.org/d3-timer.v1.min.js"></script>
+    <script src="https://d3js.org/d3-selection.v1.min.js"></script>
+    <script src="https://d3js.org/d3-transition.v1.min.js"></script>
+    <script src="https://d3js.org/d3-drag.v1.min.js"></script>
+    <script src="https://d3js.org/d3-brush.v1.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 
-    <script type="application/javascript" src="preprocess.js"></script>
-
-</head>
-
-<body>
-
-<svg id="mapSvg"></svg>
+  </head>
+  <body>
 
 
-<!--<script type="application/javascript" src="load_hacker.js"></script>-->
-<script src="js/Map.js"></script>
+    <noscript>
+      <strong>We're sorry but hw6 doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
+    </noscript>
+    <div id="app"></div>
+    <!-- built files will be auto injected -->
+      <div>
+    <div id="header-wrap">
+      <header>
+        <h1>Bird Habitat and Population Trends</h1>
+        <div>Will Richards, Corin Thummel</div>
+        <br>
+        <h4>Select a species to visualize</h4>
+        <div>
+            <form id="birdButtonArray" class="btn-group btn-group-toggle" data-toggle="buttons">
+              
+            </form>
+        </div>
+      </header>
 
-</body>
+
+
+      <br>
+      <div>
+        <button class="trendButton">Show Trend</button>
+      </div>
+      <div id="mainDisplay">
+          <div id="Map">
+              <svg id="mapSvg">
+      
+      
+              </svg>
+              <div id="seasonDiv">
+              </div>
+      
+              <div id="activeYear-bar">
+      
+              </div>
+          </div>
+          <div id="lineChart">
+
+
+          </div>
+        
+      </div>
+      
+
+
+    </div>
+
+
+
+    </div>
+    <script type="application/javascript" src="js/map.js"></script>
+    <script type="application/javascript" src="js/seasonalData.js"></script>
+    <script type="application/javascript" src="js/queue.js"></script>
+    <script type="application/javascript" src="js/linechart.js"></script>
+    <script type="application/javascript" src="js/script.js"></script>
+    <link rel="stylesheet" href="styles.css"/>
+  </body>
 </html>
