@@ -191,6 +191,6 @@ div.mapTooltip {
     font: 14px sans-serif;
 }
 
-.active input{
+.focus input{
     box-shadow: none;
 }

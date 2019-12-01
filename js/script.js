@@ -78,17 +78,7 @@ d3.select("#birdButtonArray").selectAll("label").data(allSpecies).join("label")
     .attr("value", d => nameDict[d])
     .on("click", d => {
         console.log("You just clicked a button", d3.event.srcElement.checked, "#" + d + "Label")
-        //d3.select("#" + d + "Label").classed("active") ? d3.select("#" + d + "Label").attr("class", "btn btn-primary active"): d3.select("#" + d + "Label").attr("class", "btn btn-secondary")
-        // for(var i = 0; i < allSpecies.length; i++)
-        // {
-        //     d3.select("#" + allSpecies[i] + "Label").classed("btn-primary", false)
-        //     d3.select("#" + allSpecies[i] + "Label").classed("btn-secondary", true)
-        // }
-        // for(var i = 0; i < birdButtonQueue.items.length; i++)
-        // {
-        //     d3.select("#" + birdButtonQueue.items[i] + "Label").classed("btn-secondary", false)
-        //     d3.select("#" + birdButtonQueue.items[i] + "Label").classed("btn-primary", true)
-        // }
+
         if(d3.event.srcElement.checked)
         {
             birdButtonQueue.removeBird(d);
@@ -125,6 +115,10 @@ d3.select("#birdButtonArray").selectAll("label").data(allSpecies).join("label")
         that.map.updateMap(birdButtonQueue.items);
         that.chart.updateSelectedSpecies(birdButtonQueue.items);
     })
+    // .append("img")
+    // .attr("src", d => "img/" + d + ".jpg")
+    // .attr("width", "75")
+    // .attr("height", "75")
 
 d3.select("#henspaButton").property("checked", true)
 //console.log("We set henspa to", d3.select("#henspaButton").property("checked"))

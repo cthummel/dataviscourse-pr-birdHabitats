@@ -194,7 +194,8 @@ class Map {
                 "name": element,
                 "lat": 0,
                 "long": 0,
-                "freq": 0
+                "freq": 0,
+                "count": 0,
             }
         })
         let finalTrend = this.selectedSpecies.map(function (element) {
@@ -202,7 +203,8 @@ class Map {
                 "name": element,
                 "lat": 0,
                 "long": 0,
-                "freq": 0
+                "freq": 0,
+                "count": 0,
             }
         })
         let combinedTrend = this.selectedSpecies.map(function (element) {
@@ -224,13 +226,20 @@ class Map {
 
             for(var j = 0; j < that.speciesDict[bird][2018].length; j++)
             {
-                if (that.speciesDict[bird][2018][j].count == "X" || that.speciesDict[bird][2018][j].obsDur == "") {
+                let duration = +that.speciesDict[bird][2018][j].obsDur;
+                if (that.speciesDict[bird][2018][j].count == "X"){
                     continue;
                 }
-                let freq = +that.speciesDict[bird][2018][j].count * 60 / +that.speciesDict[bird][2018][j].obsDur;
+                if (+that.speciesDict[bird][2018][j].obsDur < 120)
+                {
+                    continue;
+                    //duration = 300;
+                }
+                let freq = +that.speciesDict[bird][2018][j].count * 60 / duration;
                 finalTrend[birdIndexDict[bird]].lat += freq * that.speciesDict[bird][2018][j].lat
                 finalTrend[birdIndexDict[bird]].long += freq * that.speciesDict[bird][2018][j].long
                 finalTrend[birdIndexDict[bird]].freq += freq
+                finalTrend[birdIndexDict[bird]].count += 1;
             }
         }
         //console.log("combinedTrend", combinedTrend)
@@ -238,6 +247,7 @@ class Map {
             //console.log(record, combinedTrend[record])
             finalTrend[record].lat = finalTrend[record].lat / finalTrend[record].freq
             finalTrend[record].long = finalTrend[record].long / finalTrend[record].freq
+            finalTrend[record].freq = finalTrend[record].freq / finalTrend[record].count
             combinedTrend[record].finalYearLat = finalTrend[record].lat
             combinedTrend[record].finalYearLong = finalTrend[record].long
             combinedTrend[record].finalYearFreq = finalTrend[record].freq
@@ -246,22 +256,29 @@ class Map {
 
         for (const index in this.selectedSpecies) {
             let bird = this.selectedSpecies[index]
-            //console.log(that.speciesDict[bird][this.activeYear])
-
+            //console.log(that.speciesDict[bird][this.activeYear]);
             for(var j = 0; j < that.speciesDict[bird][this.activeYear].length; j++)
             {
-                if (that.speciesDict[bird][this.activeYear][j].count == "X" || that.speciesDict[bird][this.activeYear][j].obsDur == "") {
+                let duration = +that.speciesDict[bird][that.activeYear][j].obsDur;
+                if (that.speciesDict[bird][that.activeYear][j].count == "X"){
                     continue;
                 }
-                let freq = +that.speciesDict[bird][this.activeYear][j].count * 60 / +that.speciesDict[bird][this.activeYear][j].obsDur;
+                if (+that.speciesDict[bird][that.activeYear][j].obsDur < 120)
+                {
+                    continue
+                    //duration = 300;
+                }
+                let freq = +that.speciesDict[bird][that.activeYear][j].count * 60 / duration;
                 currentTrend[birdIndexDict[bird]].lat += freq * that.speciesDict[bird][this.activeYear][j].lat
                 currentTrend[birdIndexDict[bird]].long += freq * that.speciesDict[bird][this.activeYear][j].long
                 currentTrend[birdIndexDict[bird]].freq += freq
+                currentTrend[birdIndexDict[bird]].count += 1;
             }
         }
         for (var record in currentTrend) {
             currentTrend[record].lat = currentTrend[record].lat / currentTrend[record].freq
             currentTrend[record].long = currentTrend[record].long / currentTrend[record].freq
+            currentTrend[record].freq = currentTrend[record].freq / currentTrend[record].count
             combinedTrend[record].currentYearLat = currentTrend[record].lat
             combinedTrend[record].currentYearLong = currentTrend[record].long
             combinedTrend[record].currentYearFreq = currentTrend[record].freq
@@ -290,6 +307,16 @@ class Map {
             .style("fill", "green")
             .style("stroke", "black")
             .style("opacity", .8)
+            .on("mouseover", d => {
+                let name = [nameDict[d.name]];
+                let output = ["Year: " + that.activeYear, "Average Frequency: " + d.freq.toFixed(3)];
+                let tool = d3.select(".mapTooltip").style("left", d3.event.pageX + 15 + "px")
+                                                .style("top", d3.event.pageY + 15 + "px")
+                                                .style("opacity", 1)
+                tool.selectAll("h1").data(name).join("h1").text(d => d)
+                tool.selectAll("h2").data(output).join("h2").text(d => d)
+            })
+            .on("mouseout", () => d3.select(".mapTooltip").style("opacity", 0))
         //.title(d => d.freq)
 
         d3.select("#mapSvg").selectAll(".trendEndCircle").data(finalTrend).join("circle")
@@ -300,6 +327,16 @@ class Map {
             .style("fill", "green")
             .style("stroke", "black")
             .style("opacity", .8)
+            .on("mouseover", d => {
+                let name = [nameDict[d.name]];
+                let output = ["Year: 2018", "Average Frequency: " + d.freq.toFixed(3)];
+                let tool = d3.select(".mapTooltip").style("left", d3.event.pageX + 15 + "px")
+                                                .style("top", d3.event.pageY + 15 + "px")
+                                                .style("opacity", 1)
+                tool.selectAll("h1").data(name).join("h1").text(d => d)
+                tool.selectAll("h2").data(output).join("h2").text(d => d)
+            })
+            .on("mouseout", () => d3.select(".mapTooltip").style("opacity", 0))
         //.title(d => d.freq)
 
         //Swap the display on the button

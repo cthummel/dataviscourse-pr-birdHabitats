@@ -114,13 +114,44 @@ class lineChart {
                 let name = [that.nameDict[d.birdCode]];
                 let output = this.tooltipRender(d);
                 let tool = d3.select(".lineChartTooltip").style("left", d3.event.pageX + 15 + "px")
-                                                .style("top", d3.event.pageY + 15 + "px")
-                                                .style("opacity", 1)
+                    .style("top", d3.event.pageY + 15 + "px")
+                    .style("opacity", 1)
                 tool.selectAll("h1").data(name).join("h1").text(d => d)
                 tool.selectAll("h2").data(output).join("h2").text(d => d)
             })
             .on("mouseout", () => d3.select(".lineChartTooltip").style("opacity", 0))
-            .on("click", d => that.map.setYear(d.year))
+            .on("click", d => {
+                // if (d3.event.srcElement.checked) {
+                //     birdButtonQueue.removeBird(d);
+                // }
+                // else {
+                //     if (birdButtonQueue.items.length < 3) {
+                //         birdButtonQueue.enqueue(d);
+                //     }
+                //     else {
+                //         let removedBird = birdButtonQueue.dequeue();
+                //         d3.select("#" + removedBird + "Label").classed("btn-primary", false)
+                //         d3.select("#" + removedBird + "Label").classed("btn-secondary", true)
+                //         d3.select("#" + removedBird + "Button").property("checked", false)
+
+                //         birdButtonQueue.enqueue(d);
+                //     }
+                // }
+                // console.log(birdButtonQueue.items)
+                // if (d3.select("#" + d + "Label").classed("btn-primary")) {
+                //     d3.select("#" + d + "Label").classed("btn-primary", false)
+                //     d3.select("#" + d + "Label").classed("btn-secondary", true)
+                // }
+                // else {
+                //     d3.select("#" + d + "Label").classed("btn-secondary", false)
+                //     d3.select("#" + d + "Label").classed("btn-primary", true)
+                // }
+
+                // //Update displays with newly selected birds.
+                // that.map.updateMap(birdButtonQueue.items);
+                // that.chart.updateSelectedSpecies(birdButtonQueue.items);
+                that.map.setYear(d.year)
+            })
             //.on("click", d => d3.selectAll("lineChartLine " + d.birdCode).classed("selected", true))
 
     }
