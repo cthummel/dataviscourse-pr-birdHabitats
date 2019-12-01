@@ -28,3 +28,7 @@ The `img` folder contains pictures of each bird. The initial plan was to include
 The `js` folder contains all the code that runs the website itself. The core script is `js/script.js`. This javascript file calls and maintains the map and line chart views as are described in `js/map.js` and `js/linechart.js` files respectively.
 
 Finally, the html for the website is contained in `index.html` and the corresponding css styling is done through `styles.css`. The html also includes a link to d3 and bootstrap which were used extensively though the coding process.
+
+
+## For First Time Users
+A tutorial video on how to make use of this site is hosted on youtube at `https://www.youtube.com/watch?v=tLnMWiIHbc0`.  The movie is also embedded in the website below the general visualization.
